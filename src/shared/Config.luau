@@ -108,28 +108,28 @@ local Config = {
 	-- Gamepasses (permanentes). IDs começam em 0.
 	GamePasses = {
 		DoubleCash = {
-			id = 0,
+			id = 2079530254,
 			price = 99,
 			name = "2x Cash",
 			icon = "💰",
 			desc = "Sua base gera o dobro de Cash para sempre.",
 		},
 		DoubleTraining = {
-			id = 0,
+			id = 2079356260,
 			price = 149,
 			name = "2x Training",
 			icon = "💪",
 			desc = "Treino rende o dobro de Speed e Throw Power.",
 		},
 		VIP = {
-			id = 0,
+			id = 2079656255,
 			price = 249,
 			name = "VIP",
 			icon = "👑",
 			desc = "Tag VIP, aura, +10% Cash e +2 slots no térreo.",
 		},
 		ExtraSlots = {
-			id = 0,
+			id = 2079332259,
 			price = 199,
 			name = "+4 Base Slots",
 			icon = "🏠",
@@ -144,7 +144,7 @@ local Config = {
 	Products = {
 		-- Esteiras pagas da base: multiplicam a renda dos Boos por pouco tempo
 		Belt2x = {
-			id = 0,
+			id = 3730282380,
 			price = 15,
 			name = "Esteira 2x (2 min)",
 			tab = "Boosts",
@@ -155,7 +155,7 @@ local Config = {
 			desc = "Renda dos seus Boos em dobro por 2 min.",
 		},
 		Belt3x = {
-			id = 0,
+			id = 3730282412,
 			price = 25,
 			name = "Esteira 3x (2 min)",
 			tab = "Boosts",
@@ -166,7 +166,7 @@ local Config = {
 			desc = "Renda triplicada por 2 min.",
 		},
 		Belt4x = {
-			id = 0,
+			id = 3730282417,
 			price = 39,
 			name = "Esteira 4x (2 min)",
 			tab = "Boosts",
@@ -178,7 +178,7 @@ local Config = {
 		},
 		-- Sorte do servidor (15 min, todo mundo vê o banner)
 		Luck2x15 = {
-			id = 0,
+			id = 3730282423,
 			price = 19,
 			name = "Server Luck 2x (15 min)",
 			tab = "Boosts",
@@ -189,7 +189,7 @@ local Config = {
 			desc = "Dobra a sorte de TODO o servidor.",
 		},
 		Luck4x15 = {
-			id = 0,
+			id = 3730282426,
 			price = 39,
 			name = "Server Luck 4x (15 min)",
 			tab = "Boosts",
@@ -200,7 +200,7 @@ local Config = {
 			desc = "4x sorte para o servidor inteiro.",
 		},
 		Luck8x15 = {
-			id = 0,
+			id = 3730282434,
 			price = 79,
 			name = "Server Luck 8x (15 min)",
 			tab = "Boosts",
@@ -212,7 +212,7 @@ local Config = {
 		},
 		-- Boosts pessoais
 		Cash2x15 = {
-			id = 0,
+			id = 3730282437,
 			price = 49,
 			name = "2x Cash pessoal (15 min)",
 			tab = "Boosts",
@@ -222,7 +222,7 @@ local Config = {
 			desc = "Sua base rende o dobro por 15 min.",
 		},
 		LuckyThrows5 = {
-			id = 0,
+			id = 3730282442,
 			price = 39,
 			name = "5 Super Lucky Captures",
 			tab = "Boosts",
@@ -232,7 +232,7 @@ local Config = {
 			desc = "As próximas 5 capturas puxam raridade alta.",
 		},
 		LuckyThrows10 = {
-			id = 0,
+			id = 3730282448,
 			price = 69,
 			name = "10 Super Lucky Captures",
 			tab = "Boosts",
@@ -243,7 +243,7 @@ local Config = {
 		},
 		-- Poderzinhos
 		SpeedRush3 = {
-			id = 0,
+			id = 3730282454,
 			price = 19,
 			name = "Speed Rush (3 usos)",
 			tab = "Poderes",
@@ -254,7 +254,7 @@ local Config = {
 			desc = "Corrida turbo por 8s.",
 		},
 		Invis1 = {
-			id = 0,
+			id = 3730282460,
 			price = 29,
 			name = "Invisibilidade (1 uso, 6s)",
 			tab = "Poderes",
@@ -265,7 +265,7 @@ local Config = {
 			desc = "Some por 6s (não dá para roubar invisível).",
 		},
 		SuperJump3 = {
-			id = 0,
+			id = 3730282467,
 			price = 19,
 			name = "Super Jump (3 usos)",
 			tab = "Poderes",
@@ -276,7 +276,7 @@ local Config = {
 			desc = "Pulo gigante por 6s.",
 		},
 		Slap3 = {
-			id = 0,
+			id = 3730282471,
 			price = 25,
 			name = "Boo Slap (3 usos)",
 			tab = "Poderes",
@@ -287,7 +287,7 @@ local Config = {
 			desc = "Empurra quem está perto e derruba o Boo roubado.",
 		},
 		Freeze1 = {
-			id = 0,
+			id = 3730282478,
 			price = 49,
 			name = "Freeze (1 uso, 3s)",
 			tab = "Poderes",
@@ -299,7 +299,7 @@ local Config = {
 		},
 		-- Sustos cômicos
 		ScareClassic3 = {
-			id = 0,
+			id = 3730282482,
 			price = 19,
 			name = "Susto Clássico (3 usos)",
 			tab = "Sustos",
@@ -310,7 +310,7 @@ local Config = {
 			desc = "BOO! fofo no jogador mais perto.",
 		},
 		ScareParty1 = {
-			id = 0,
+			id = 3730282488,
 			price = 39,
 			name = "Susto Festa (1 uso, área)",
 			tab = "Sustos",
@@ -321,7 +321,7 @@ local Config = {
 			desc = "Assusta todo mundo em volta de você.",
 		},
 		DecoyBoo1 = {
-			id = 0,
+			id = 3730282493,
 			price = 29,
 			name = "Boo Isca (1 uso)",
 			tab = "Sustos",
@@ -332,7 +332,7 @@ local Config = {
 			desc = "Um Boo falso na sua base. Ladrão leva só fumaça.",
 		},
 		BaseAlarm1 = {
-			id = 0,
+			id = 3730282505,
 			price = 25,
 			name = "Alarme da Base (1 uso, 60s)",
 			tab = "Sustos",
@@ -344,7 +344,7 @@ local Config = {
 		},
 		-- Cash packs
 		CashS = {
-			id = 0,
+			id = 3730282513,
 			price = 29,
 			name = "Saco de Cash",
 			tab = "Cash",
@@ -354,7 +354,7 @@ local Config = {
 			desc = "+1.500 Cash",
 		},
 		CashM = {
-			id = 0,
+			id = 3730282521,
 			price = 79,
 			name = "Baú de Cash",
 			tab = "Cash",
@@ -364,7 +364,7 @@ local Config = {
 			desc = "+6.000 Cash",
 		},
 		CashL = {
-			id = 0,
+			id = 3730282529,
 			price = 149,
 			name = "Cofre de Cash",
 			tab = "Cash",
