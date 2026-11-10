@@ -1024,14 +1024,7 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		Material = Enum.Material.SmoothPlastic,
 	}, plot)
 	lift:SetAttribute("Target", "Level_2Landing")
-	mk("ProximityPrompt", {
-		ActionText = "Subir",
-		ObjectText = "Elevador",
-		HoldDuration = 0.15,
-		MaxActivationDistance = 7,
-		RequiresLineOfSight = false,
-	}, lift)
-	billboard(lift, "SUBIR", UDim2.fromOffset(90, 30), Vector3.new(0, 2.5, 0), nil, 60)
+	billboard(lift, "PISE: SUBIR", UDim2.fromOffset(90, 30), Vector3.new(0, 2.5, 0), nil, 60)
 	mk("Part", {
 		Name = "GroundLanding",
 		Size = Vector3.new(4, 0.2, 4),

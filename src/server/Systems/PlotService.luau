@@ -170,25 +170,48 @@ local function setupPad(plot: Model, pad: BasePart)
 	end)
 end
 
+-- Elevadores: pisar no pad leva ao andar alvo (sem tecla, não disputa o E com os slots)
+local lifts: { { plot: Model, pad: BasePart } } = {}
+local liftCooldown: { [Player]: number } = {}
+local liftWarned: { [Player]: number } = {}
+
 local function setupLift(plot: Model, pad: BasePart)
-	local p = pad:FindFirstChildOfClass("ProximityPrompt")
-	p.Triggered:Connect(function(player)
-		if not ctx.Net.allowPrompt(player, "Lift") then
-			return
-		end
-		local pos = ctx.Net.position(player)
-		if not pos or (pos - pad.Position).Magnitude > 12 then
-			return
-		end
-		local target = plot:FindFirstChild(pad:GetAttribute("Target") or "", true)
-		if not target then
-			ctx.notify(player, "Esse andar ainda não foi construído.", "info")
-			return
-		end
-		player.Character:PivotTo(target.CFrame + Vector3.new(0, 3.5, 0))
-		ctx.fx("Lift", { userId = player.UserId })
-	end)
+	table.insert(lifts, { plot = plot, pad = pad })
 end
+
+local function checkLifts()
+	local now = os.clock()
+	for i = #lifts, 1, -1 do
+		if not lifts[i].pad.Parent then
+			table.remove(lifts, i)
+		end
+	end
+	for _, player in Players:GetPlayers() do
+		local pos = ctx.Net.position(player)
+		if pos and (liftCooldown[player] or 0) < now then
+			for _, l in ipairs(lifts) do
+				local d = pos - l.pad.Position
+				if Vector2.new(d.X, d.Z).Magnitude < 2.6 and d.Y > -1 and d.Y < 5 then
+					local target = l.plot:FindFirstChild(l.pad:GetAttribute("Target") or "", true)
+					if target then
+						liftCooldown[player] = now + 1.2
+						player.Character:PivotTo(CFrame.new(target.Position + Vector3.new(0, 3.5, 0)))
+						ctx.fx("Lift", { userId = player.UserId })
+					elseif (liftWarned[player] or 0) < now then
+						liftWarned[player] = now + 4
+						ctx.notify(player, "Esse andar ainda não foi construído. Use a placa Melhorar base!", "info")
+					end
+					break
+				end
+			end
+		end
+	end
+end
+
+Players.PlayerRemoving:Connect(function(player)
+	liftCooldown[player] = nil
+	liftWarned[player] = nil
+end)
 
 ----------------------------------------------------------------------
 -- Andares (construídos conforme o BaseLevel do dono)
@@ -217,13 +240,6 @@ local function liftPad(parent: Instance, cf: CFrame, up: boolean, target: string
 		Material = Enum.Material.SmoothPlastic,
 	}, parent)
 	pad:SetAttribute("Target", target)
-	mk("ProximityPrompt", {
-		ActionText = up and "Subir" or "Descer",
-		ObjectText = "Elevador",
-		HoldDuration = 0.15,
-		MaxActivationDistance = 7,
-		RequiresLineOfSight = false,
-	}, pad)
 	local gui = mk("BillboardGui", {
 		Size = UDim2.fromOffset(90, 30),
 		StudsOffsetWorldSpace = Vector3.new(0, 2.5, 0),
@@ -237,7 +253,7 @@ local function liftPad(parent: Instance, cf: CFrame, up: boolean, target: string
 		TextScaled = true,
 		TextColor3 = Color3.new(1, 1, 1),
 		TextStrokeTransparency = 0.2,
-		Text = up and "SUBIR" or "DESCER",
+		Text = up and "PISE: SUBIR" or "PISE: DESCER",
 	}, gui)
 	return pad
 end
@@ -804,6 +820,7 @@ function PlotService.init(c)
 		while true do
 			local dt = task.wait(0.25)
 			tick()
+			checkLifts()
 			signTimer += dt
 			if signTimer >= 1 then
 				signTimer = 0
