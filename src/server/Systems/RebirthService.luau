@@ -34,6 +34,7 @@ function RebirthService.rebirth(player: Player)
 	end
 	data.Rebirths += 1
 	data.Cash = Config.Economy.StartingCash
+	data.Vault = 0
 	ctx.Boos.clearBelowTier(player, data, Rarity.tier(Config.Rebirth.KeepRarityAtOrAbove))
 	-- Garante pelo menos um Boo inicial para não travar o jogador
 	if next(data.PlotLayout) == nil and next(data.Inventory) == nil then

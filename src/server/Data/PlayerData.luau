@@ -47,6 +47,10 @@ PlayerData.TEMPLATE = {
 	FirstJoin = 0,
 	TutorialDone = false,
 	Cash2xEnds = 0, -- os.time() em que acaba o 2x Cash pessoal
+	BaseLevel = 1, -- andares construídos (1 = só térreo)
+	Vault = 0, -- renda guardada na base, esperando a coleta
+	IncomeBoostMult = 1, -- esteira paga ativa (2x/3x/4x)
+	IncomeBoostEnds = 0, -- os.time() em que a esteira paga acaba
 }
 
 local Profiles: { [Player]: any } = {}
@@ -182,8 +186,8 @@ local function onPlayerAdded(player: Player)
 	local isNew = data.FirstJoin == 0
 	if isNew then
 		data.FirstJoin = os.time()
-		local starter = Config.Economy.StarterBoo
-		data.Inventory[starter] = (data.Inventory[starter] or 0) + 1
+		-- o Boo inicial já nasce colocado na base (renda desde o primeiro segundo)
+		data.PlotLayout["1"] = Config.Economy.StarterBoo
 	end
 
 	Profiles[player] = profile

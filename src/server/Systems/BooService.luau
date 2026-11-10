@@ -69,8 +69,8 @@ local function placedCount(data): number
 end
 
 local function firstFreeSlot(player: Player, data): number?
-	for i = 1, ctx.Plots.slotCount(player) do
-		if data.PlotLayout[tostring(i)] == nil then
+	for i = 1, Config.Plot.MaxSlots do
+		if ctx.Plots.isUnlocked(player, i) and data.PlotLayout[tostring(i)] == nil then
 			return i
 		end
 	end
@@ -92,16 +92,19 @@ function BooService.incomeMultiplier(player: Player, data): number
 	if ctx.Passes.owns(player, "VIP") then
 		m *= 1.1
 	end
+	-- Esteiras pagas (2x/3x/4x por 2 min)
+	if (data.IncomeBoostEnds or 0) > os.time() then
+		m *= math.max(1, data.IncomeBoostMult or 1)
+	end
 	return m
 end
 
 function BooService.baseIncome(player: Player, data): number
 	local total = 0
-	local slots = ctx.Plots.slotCount(player)
 	for slot, key in pairs(data.PlotLayout) do
 		local i = tonumber(slot)
 		local def = Config.Boos[key]
-		if def and i and i <= slots then
+		if def and i and ctx.Plots.isUnlocked(player, i) then
 			total += def.incomePerSec
 		end
 	end
@@ -270,14 +273,13 @@ function BooService.place(player: Player, key, slotIndex)
 	if not ctx.Net.isString(key) or not Config.Boos[key] or (data.Inventory[key] or 0) <= 0 then
 		return
 	end
-	local maxSlots = ctx.Plots.slotCount(player)
 	if slotIndex == nil then
 		slotIndex = firstFreeSlot(player, data)
 		if not slotIndex then
 			ctx.notify(player, "Sua base está cheia. Guarde ou venda um Boo.", "warn")
 			return
 		end
-	elseif not ctx.Net.isInt(slotIndex, 1, maxSlots) then
+	elseif not ctx.Net.isInt(slotIndex, 1, Config.Plot.MaxSlots) or not ctx.Plots.isUnlocked(player, slotIndex) then
 		return
 	end
 	local slotKey = tostring(slotIndex)
@@ -600,8 +602,13 @@ function BooService.spawnDecoy(player: Player, duration: number): boolean
 		return false
 	end
 	local free = {}
-	for i = 1, ctx.Plots.slotCount(player) do
-		if data.PlotLayout[tostring(i)] == nil and not plot:FindFirstChild("Decoy_" .. i) then
+	for i = 1, Config.Plot.MaxSlots do
+		if
+			ctx.Plots.isUnlocked(player, i)
+			and ctx.Plots.pad(plot, i)
+			and data.PlotLayout[tostring(i)] == nil
+			and not plot:FindFirstChild("Decoy_" .. i)
+		then
 			table.insert(free, i)
 		end
 	end
@@ -700,7 +707,7 @@ function BooService.init(c)
 		end
 	end)
 
-	-- Renda passiva
+	-- Renda passiva: cai no COFRE da base (o dono coleta na esteira de coleta)
 	task.spawn(function()
 		while true do
 			local dt = task.wait(Config.Economy.IncomeTickSeconds)
@@ -709,8 +716,7 @@ function BooService.init(c)
 					local data = profile.Data
 					local gain = BooService.incomePerSec(player, data) * dt
 					if gain > 0 then
-						data.Cash += gain
-						data.TotalCash += gain
+						data.Vault = (data.Vault or 0) + gain
 						ctx.PlayerData.markDirty(player)
 					end
 				end

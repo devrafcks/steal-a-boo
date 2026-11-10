@@ -67,6 +67,19 @@ GRANTS.PersonalCash2x = function(_player, data, def)
 	return true
 end
 
+-- Esteira paga: fica com o MAIOR multiplicador; comprar de novo soma tempo
+GRANTS.IncomeBoost = function(_player, data, def)
+	local now = os.time()
+	local active = (data.IncomeBoostEnds or 0) > now
+	if active and (data.IncomeBoostMult or 1) >= def.mult then
+		data.IncomeBoostEnds += def.duration -- mantém o maior multiplicador e estende o tempo
+	else
+		data.IncomeBoostMult = def.mult
+		data.IncomeBoostEnds = now + def.duration
+	end
+	return true
+end
+
 GRANTS.LuckyCaptures = function(_player, data, def)
 	data.LuckyCaptures += def.amount
 	return true
