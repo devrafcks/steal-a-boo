@@ -1,0 +1,12 @@
+# Rojo / Wally
+/Packages
+/ServerPackages
+/DevPackages
+sourcemap.json
+*.rbxl
+*.rbxlx
+*.rbxl.lock
+*.rbxlx.lock
+*.rbxm
+roblox.toml
+/.claude/
