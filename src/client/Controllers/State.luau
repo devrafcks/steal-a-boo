@@ -2,10 +2,12 @@
 	State.luau — último snapshot que o servidor mandou (DataUpdated).
 	Só leitura para a UI: o cliente nunca altera dinheiro, inventário etc.
 ]]
+local Signal = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared").Util.Signal)
+
 local State = {}
 
-local changed = Instance.new("BindableEvent")
-State.Changed = changed.Event
+local changed = Signal.new()
+State.Changed = changed
 State.data = nil
 
 function State.set(snapshot)

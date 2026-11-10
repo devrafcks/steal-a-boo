@@ -14,6 +14,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Config = require(Shared.Config)
+local Signal = require(Shared.Util.Signal)
 
 local PlayerData = {}
 
@@ -51,10 +52,10 @@ PlayerData.TEMPLATE = {
 local Profiles: { [Player]: any } = {}
 local Sessions: { [Player]: any } = {} -- estado só desta sessão (não salva)
 
-local loadedEvent = Instance.new("BindableEvent")
-local releasingEvent = Instance.new("BindableEvent")
-PlayerData.Loaded = loadedEvent.Event -- (player, profile)
-PlayerData.Releasing = releasingEvent.Event -- (player, profile) antes do EndSession
+local loadedEvent = Signal.new()
+local releasingEvent = Signal.new()
+PlayerData.Loaded = loadedEvent -- (player, profile)
+PlayerData.Releasing = releasingEvent -- (player, profile) antes do EndSession
 
 local store
 local usingFallback = false
