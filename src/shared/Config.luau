@@ -82,10 +82,27 @@ local Config = {
 	},
 
 	Plot = {
-		BaseSlots = 10,
-		ExtraSlotsPass = 4, -- gamepass ExtraSlots
-		VIPSlots = 2, -- gamepass VIP
-		MaxSlots = 16, -- 12 no térreo + 4 no mezanino
+		-- Térreo: 12 slots (6 livres + 4 do passe ExtraSlots + 2 do passe VIP)
+		GroundSlots = 12,
+		BaseGroundSlots = 6,
+		ExtraSlotsPass = 4, -- gamepass ExtraSlots (slots 7 a 10 do térreo)
+		VIPSlots = 2, -- gamepass VIP (slots 11 e 12 do térreo)
+		-- Andares de cima: comprados com Cash no painel Base (8 slots cada)
+		FloorSlots = 8,
+		FloorHeight = 14,
+		Floors = {
+			{ name = "Térreo", cost = 0 },
+			{ name = "2º andar", cost = 2500 },
+			{ name = "3º andar", cost = 40000 },
+			{ name = "4º andar", cost = 500000 },
+		},
+		MaxSlots = 36, -- 12 + 8 + 8 + 8
+	},
+
+	-- Cofre e esteira de coleta: a renda dos Boos cai no cofre da base.
+	-- Pise na esteira de coleta (perto do seu spawn) para passar o cofre para o seu Cash.
+	Vault = {
+		CollectRadius = 5,
 	},
 
 	-- Gamepasses (permanentes). IDs começam em 0.
@@ -109,22 +126,56 @@ local Config = {
 			price = 249,
 			name = "VIP",
 			icon = "👑",
-			desc = "Tag VIP, aura, +10% Cash e +2 slots na base.",
+			desc = "Tag VIP, aura, +10% Cash e +2 slots no térreo.",
 		},
 		ExtraSlots = {
 			id = 0,
 			price = 199,
 			name = "+4 Base Slots",
 			icon = "🏠",
-			desc = "Quatro slots extras permanentes na base.",
+			desc = "Quatro slots extras permanentes no térreo.",
 		},
 	},
 
 	-- Dev Products (consumíveis). IDs começam em 0.
 	-- kind diz o que o ProcessReceipt entrega:
 	--   ServerLuck (mult, duration) | PersonalCash2x (duration) | LuckyCaptures (amount)
-	--   Consumable (item, amount)   | Cash (amount)
+	--   Consumable (item, amount)   | Cash (amount) | IncomeBoost (mult, duration)
 	Products = {
+		-- Esteiras pagas da base: multiplicam a renda dos Boos por pouco tempo
+		Belt2x = {
+			id = 0,
+			price = 15,
+			name = "Esteira 2x (2 min)",
+			tab = "Boosts",
+			icon = "⏩",
+			kind = "IncomeBoost",
+			mult = 2,
+			duration = 120,
+			desc = "Renda dos seus Boos em dobro por 2 min.",
+		},
+		Belt3x = {
+			id = 0,
+			price = 25,
+			name = "Esteira 3x (2 min)",
+			tab = "Boosts",
+			icon = "⏩",
+			kind = "IncomeBoost",
+			mult = 3,
+			duration = 120,
+			desc = "Renda triplicada por 2 min.",
+		},
+		Belt4x = {
+			id = 0,
+			price = 39,
+			name = "Esteira 4x (2 min)",
+			tab = "Boosts",
+			icon = "🚀",
+			kind = "IncomeBoost",
+			mult = 4,
+			duration = 120,
+			desc = "Renda QUADRUPLICADA por 2 min!",
+		},
 		-- Sorte do servidor (15 min, todo mundo vê o banner)
 		Luck2x15 = {
 			id = 0,
@@ -566,14 +617,34 @@ local Config = {
 	-- Sons: SÓ preencha com IDs do Creator Store que você tem licença (anote em assets/CREDITS.md).
 	-- 0 = sem som (o jogo funciona normalmente).
 	Sounds = {
-		Pop = 0,
-		RareSting = 0,
-		Alarm = 0,
-		Whoosh = 0,
-		Boo = 0,
-		Coin = 0,
-		Music = 0,
+		-- Áudio licenciado do Creator Store (ver assets/CREDITS.md). 0 = sem som.
+		Pop = 9112872244, -- ProSoundEffects
+		RareSting = 9116394545, -- ProSoundEffects
+		Alarm = 9113041445, -- ProSoundEffects (sirene de desenho)
+		Whoosh = 9126283592, -- ProSoundEffects
+		Boo = 9119197913, -- ProSoundEffects (apito cômico)
+		Coin = 9113849306, -- ProSoundEffects
+		Slap = 9114771792, -- ProSoundEffects
+		Freeze = 9125611419, -- ProSoundEffects
+		Poof = 9125640290, -- ProSoundEffects
+		Purchase = 10066947742, -- Roblox
+		Click = 15675059323, -- Roblox
+		Spring = 12222124, -- Roblox
+		Music = 1838796580, -- APMOfficial "Carnival"
 		Volume = 0.4,
+	},
+	-- MaterialVariants gerados no Studio (MaterialService). Se não existirem, usa o material base.
+	Materials = {
+		Planks = "BooCandyPlanks",
+		Tiles = "BooStarTiles",
+		Tent = "BooTentStripes",
+		Cobble = "BooPeachCobble",
+		Belt = "BooConveyor",
+	},
+	-- Alguns sons são longos: toca só o começo (segundos)
+	SoundTrim = {
+		Coin = 0.9,
+		Freeze = 1.2,
 	},
 
 	RateLimit = {

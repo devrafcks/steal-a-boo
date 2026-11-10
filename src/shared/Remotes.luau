@@ -23,6 +23,7 @@ Remotes.ClientEvents = {
 	"RequestUsePower", -- (powerKey)
 	"RequestUseScare", -- (scareKey)
 	"ToggleBaseGate", -- () tranca o portão da própria base
+	"RequestUpgradeBase", -- () constrói o próximo andar da base
 	"UpdateSettings", -- ({ReduceScares, MusicVolume})
 }
 
