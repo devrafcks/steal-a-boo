@@ -211,7 +211,9 @@ function PlayerData.init()
 	end)
 	if not ok or ProfileStore == nil then
 		usingFallback = true
-		warn("[PlayerData] ProfileStore não encontrado (rode `wally install`). Usando save em MEMÓRIA — nada será salvo!")
+		warn(
+			"[PlayerData] ProfileStore não encontrado (rode `wally install`). Usando save em MEMÓRIA — nada será salvo!"
+		)
 	else
 		local s = ProfileStore.New(Config.DataStore.ProfileStoreName, PlayerData.TEMPLATE)
 		if studioApiAvailable() then
@@ -219,7 +221,9 @@ function PlayerData.init()
 		else
 			store = s.Mock
 			usingMock = true
-			warn("[PlayerData] Studio sem acesso às API Services: usando ProfileStore.Mock (memória). Ligue Game Settings > Security > Enable Studio Access to API Services para testar o save de verdade.")
+			warn(
+				"[PlayerData] Studio sem acesso às API Services: usando ProfileStore.Mock (memória). Ligue Game Settings > Security > Enable Studio Access to API Services para testar o save de verdade."
+			)
 		end
 	end
 

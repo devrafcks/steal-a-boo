@@ -36,7 +36,12 @@ local function process(receiptInfo)
 
 	local key = Products.keyById(receiptInfo.ProductId)
 	if not key then
-		warn(string.format("[ProcessReceipt] ProductId %s não está no Config.Products — não vou entregar.", tostring(receiptInfo.ProductId)))
+		warn(
+			string.format(
+				"[ProcessReceipt] ProductId %s não está no Config.Products — não vou entregar.",
+				tostring(receiptInfo.ProductId)
+			)
+		)
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
 
@@ -46,7 +51,9 @@ local function process(receiptInfo)
 	if not ReceiptStore.has(data, purchaseId) then
 		local ok, granted = pcall(Products.grant, player, data, key)
 		if not ok or not granted then
-			warn(string.format("[ProcessReceipt] falha ao entregar %s para %s: %s", key, player.Name, tostring(granted)))
+			warn(
+				string.format("[ProcessReceipt] falha ao entregar %s para %s: %s", key, player.Name, tostring(granted))
+			)
 			return Enum.ProductPurchaseDecision.NotProcessedYet
 		end
 		ReceiptStore.record(data, purchaseId)

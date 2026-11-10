@@ -22,7 +22,16 @@ local plotsFolder: Instance
 local plotOf: { [Player]: Model } = {}
 local ownerOfPlot: { [Model]: Player } = {}
 local waiting: { Player } = {}
-local gate: { [Model]: { lockedUntil: number, nextLockAt: number, alarmUntil: number, lastAlarm: number, lastEject: { [Player]: number } } } = {}
+local gate: {
+	[Model]: {
+		lockedUntil: number,
+		nextLockAt: number,
+		alarmUntil: number,
+		lastAlarm: number,
+		lastEject: { [Player]: number },
+	},
+} =
+	{}
 local slotModels: { [Model]: { [number]: Model } } = {}
 local charConns: { [Player]: RBXScriptConnection } = {}
 
@@ -313,7 +322,10 @@ function PlotService.toggleGate(player: Player)
 	g.lockedUntil = now + Config.World.GateLockSeconds
 	g.nextLockAt = g.lockedUntil + Config.World.GateOpenSeconds
 	plot:SetAttribute("LockEnds", Workspace:GetServerTimeNow() + Config.World.GateLockSeconds)
-	plot:SetAttribute("NextLockAt", Workspace:GetServerTimeNow() + Config.World.GateLockSeconds + Config.World.GateOpenSeconds)
+	plot:SetAttribute(
+		"NextLockAt",
+		Workspace:GetServerTimeNow() + Config.World.GateLockSeconds + Config.World.GateOpenSeconds
+	)
 	ctx.notify(player, string.format("Base trancada por %ds!", Config.World.GateLockSeconds), "success")
 	ctx.fx("GateLocked", { plotIndex = plot:GetAttribute("Index") })
 	-- intrusos são expulsos já no próximo tick

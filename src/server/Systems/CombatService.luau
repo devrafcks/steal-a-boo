@@ -32,7 +32,8 @@ local function hasLineOfSight(a: Player, b: Player): boolean
 	end
 	local params = RaycastParams.new()
 	params.FilterType = Enum.RaycastFilterType.Exclude
-	params.FilterDescendantsInstances = { ca, cb, Workspace.StealABooWorld.ZoneBoos, Workspace.StealABooWorld.DroppedBoos }
+	params.FilterDescendantsInstances =
+		{ ca, cb, Workspace.StealABooWorld.ZoneBoos, Workspace.StealABooWorld.DroppedBoos }
 	params.RespectCanCollide = true
 	local hit = Workspace:Raycast(pa, pb - pa, params)
 	return hit == nil

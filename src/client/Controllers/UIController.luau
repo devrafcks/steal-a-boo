@@ -59,7 +59,15 @@ function UI.corner(parent: Instance, radius: number?)
 end
 
 function UI.stroke(parent: Instance, thickness: number?, color: Color3?)
-	return UI.make("UIStroke", { Thickness = thickness or 3, Color = color or T.Stroke, ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = parent })
+	return UI.make(
+		"UIStroke",
+		{
+			Thickness = thickness or 3,
+			Color = color or T.Stroke,
+			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+			Parent = parent,
+		}
+	)
 end
 
 function UI.text(parent: Instance, props)
@@ -94,7 +102,8 @@ end
 function UI.squash(gui: GuiObject)
 	local scale = gui:FindFirstChild("SquashScale") or UI.make("UIScale", { Name = "SquashScale", Parent = gui })
 	scale.Scale = 0.88
-	TweenService:Create(scale, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	TweenService:Create(scale, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 })
+		:Play()
 end
 
 function UI.button(parent: Instance, props)
@@ -112,8 +121,21 @@ function UI.button(parent: Instance, props)
 	})
 	UI.corner(b, props.Radius or 12)
 	UI.stroke(b, 3)
-	UI.make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(200, 200, 200)), Parent = b })
-	local label = UI.text(b, { Text = props.Text or "", Size = UDim2.new(1, -10, 1, -6), Position = UDim2.fromOffset(5, 3), MaxTextSize = props.MaxTextSize or 26, ZIndex = (props.ZIndex or 1) + 1, Name = "Label" })
+	UI.make(
+		"UIGradient",
+		{ Rotation = 90, Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(200, 200, 200)), Parent = b }
+	)
+	local label = UI.text(
+		b,
+		{
+			Text = props.Text or "",
+			Size = UDim2.new(1, -10, 1, -6),
+			Position = UDim2.fromOffset(5, 3),
+			MaxTextSize = props.MaxTextSize or 26,
+			ZIndex = (props.ZIndex or 1) + 1,
+			Name = "Label",
+		}
+	)
 	b.MouseButton1Click:Connect(function()
 		if b:GetAttribute("Disabled") then
 			return
@@ -160,8 +182,14 @@ updateScale()
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateScale)
 
 -- Camada para modais (por cima do HUD)
-UI.modalLayer = UI.make("Frame", { Name = "Modals", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 50, Parent = UI.root })
-UI.overlay = UI.make("Frame", { Name = "Overlay", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 90, Parent = UI.root })
+UI.modalLayer = UI.make(
+	"Frame",
+	{ Name = "Modals", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 50, Parent = UI.root }
+)
+UI.overlay = UI.make(
+	"Frame",
+	{ Name = "Overlay", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 90, Parent = UI.root }
+)
 
 ----------------------------------------------------------------------
 -- Painéis modais (um aberto por vez)
@@ -182,7 +210,19 @@ function UI.panel(name: string, title: string, size: UDim2, onOpen: (() -> ())?)
 	})
 	UI.corner(frame, 18)
 	UI.stroke(frame, 4)
-	UI.text(frame, { Text = title, Font = T.FontTitle, Size = UDim2.new(1, -120, 0, 46), Position = UDim2.fromOffset(20, 10), XAlign = Enum.TextXAlignment.Left, Color = T.Yellow, ZIndex = 51, Name = "Title" })
+	UI.text(
+		frame,
+		{
+			Text = title,
+			Font = T.FontTitle,
+			Size = UDim2.new(1, -120, 0, 46),
+			Position = UDim2.fromOffset(20, 10),
+			XAlign = Enum.TextXAlignment.Left,
+			Color = T.Yellow,
+			ZIndex = 51,
+			Name = "Title",
+		}
+	)
 	UI.button(frame, {
 		Name = "Close",
 		Text = "X",
@@ -194,7 +234,17 @@ function UI.panel(name: string, title: string, size: UDim2, onOpen: (() -> ())?)
 			UI.close(name)
 		end,
 	})
-	local body = UI.make("Frame", { Name = "Body", BackgroundTransparency = 1, Position = UDim2.fromOffset(16, 64), Size = UDim2.new(1, -32, 1, -80), ZIndex = 51, Parent = frame })
+	local body = UI.make(
+		"Frame",
+		{
+			Name = "Body",
+			BackgroundTransparency = 1,
+			Position = UDim2.fromOffset(16, 64),
+			Size = UDim2.new(1, -32, 1, -80),
+			ZIndex = 51,
+			Parent = frame,
+		}
+	)
 	panels[name] = { frame = frame, onOpen = onOpen }
 	return frame, body
 end
@@ -249,7 +299,15 @@ local toastHolder = UI.make("Frame", {
 	ZIndex = 80,
 	Parent = UI.root,
 })
-UI.make("UIListLayout", { Padding = UDim.new(0, 6), HorizontalAlignment = Enum.HorizontalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder, Parent = toastHolder })
+UI.make(
+	"UIListLayout",
+	{
+		Padding = UDim.new(0, 6),
+		HorizontalAlignment = Enum.HorizontalAlignment.Center,
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Parent = toastHolder,
+	}
+)
 local toastCount = 0
 
 local function sanitize(text: string): string
@@ -272,10 +330,29 @@ function UI.toast(text: string, kind: string?)
 		end)
 		frames[1]:Destroy()
 	end
-	local f = UI.make("Frame", { Name = "Toast", LayoutOrder = toastCount, BackgroundColor3 = TOAST_COLORS[kind or "info"] or T.PanelLight, Size = UDim2.fromOffset(500, 42), ZIndex = 80, Parent = toastHolder })
+	local f = UI.make(
+		"Frame",
+		{
+			Name = "Toast",
+			LayoutOrder = toastCount,
+			BackgroundColor3 = TOAST_COLORS[kind or "info"] or T.PanelLight,
+			Size = UDim2.fromOffset(500, 42),
+			ZIndex = 80,
+			Parent = toastHolder,
+		}
+	)
 	UI.corner(f, 12)
 	UI.stroke(f, 3)
-	UI.text(f, { Text = sanitize(text), Size = UDim2.new(1, -20, 1, -8), Position = UDim2.fromOffset(10, 4), MaxTextSize = 22, ZIndex = 81 })
+	UI.text(
+		f,
+		{
+			Text = sanitize(text),
+			Size = UDim2.new(1, -20, 1, -8),
+			Position = UDim2.fromOffset(10, 4),
+			MaxTextSize = 22,
+			ZIndex = 81,
+		}
+	)
 	UI.squash(f)
 	task.delay(kind == "rare" and 5 or 3.5, function()
 		if f.Parent then

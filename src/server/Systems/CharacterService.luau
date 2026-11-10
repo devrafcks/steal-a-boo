@@ -93,7 +93,8 @@ function CharacterService.refresh(player: Player)
 	local invis = s.invisUntil > now
 	if char:GetAttribute("Invisible") ~= invis then
 		char:SetAttribute("Invisible", invis) -- os outros clientes aplicam a transparência
-		hum.DisplayDistanceType = invis and Enum.HumanoidDisplayDistanceType.None or Enum.HumanoidDisplayDistanceType.Viewer
+		hum.DisplayDistanceType = invis and Enum.HumanoidDisplayDistanceType.None
+			or Enum.HumanoidDisplayDistanceType.Viewer
 	end
 	char:SetAttribute("Safe", s.safeUntil > now)
 end

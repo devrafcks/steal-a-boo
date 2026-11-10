@@ -56,38 +56,105 @@ end
 local ACCESSORIES = {}
 
 ACCESSORIES.Stick = function(model, body, s, def)
-	attach(model, body, part({ Name = "Stick", Shape = Enum.PartType.Cylinder, Size = Vector3.new(2.2 * s, 0.25 * s, 0.25 * s), Color = Color3.fromRGB(150, 100, 60), Material = Enum.Material.Wood }), CFrame.new(0, -1.9 * s, 0) * CFrame.Angles(0, 0, math.rad(90)))
+	attach(
+		model,
+		body,
+		part({
+			Name = "Stick",
+			Shape = Enum.PartType.Cylinder,
+			Size = Vector3.new(2.2 * s, 0.25 * s, 0.25 * s),
+			Color = Color3.fromRGB(150, 100, 60),
+			Material = Enum.Material.Wood,
+		}),
+		CFrame.new(0, -1.9 * s, 0) * CFrame.Angles(0, 0, math.rad(90))
+	)
 end
 
 ACCESSORIES.Fluff = function(model, body, s, def)
 	for i = -1, 1 do
-		attach(model, body, part({ Name = "Fluff", Shape = Enum.PartType.Ball, Size = Vector3.one * 1.1 * s, Color = lighten(def.color, 0.35) }), CFrame.new(i * 0.7 * s, 1.35 * s, -0.1 * s))
+		attach(
+			model,
+			body,
+			part({
+				Name = "Fluff",
+				Shape = Enum.PartType.Ball,
+				Size = Vector3.one * 1.1 * s,
+				Color = lighten(def.color, 0.35),
+			}),
+			CFrame.new(i * 0.7 * s, 1.35 * s, -0.1 * s)
+		)
 	end
 end
 
 ACCESSORIES.Ticket = function(model, body, s, def)
-	attach(model, body, part({ Name = "Ticket", Size = Vector3.new(1.6 * s, 0.9 * s, 0.1 * s), Color = Color3.fromRGB(255, 90, 90) }), CFrame.new(0.4 * s, 1.5 * s, 0) * CFrame.Angles(0, 0, math.rad(-20)))
+	attach(
+		model,
+		body,
+		part({ Name = "Ticket", Size = Vector3.new(1.6 * s, 0.9 * s, 0.1 * s), Color = Color3.fromRGB(255, 90, 90) }),
+		CFrame.new(0.4 * s, 1.5 * s, 0) * CFrame.Angles(0, 0, math.rad(-20))
+	)
 end
 
 ACCESSORIES.Popcorn = function(model, body, s, def)
-	attach(model, body, part({ Name = "Bucket", Size = Vector3.new(1.4 * s, 0.9 * s, 1.4 * s), Color = Color3.fromRGB(230, 60, 60) }), CFrame.new(0, 1.45 * s, 0))
+	attach(
+		model,
+		body,
+		part({ Name = "Bucket", Size = Vector3.new(1.4 * s, 0.9 * s, 1.4 * s), Color = Color3.fromRGB(230, 60, 60) }),
+		CFrame.new(0, 1.45 * s, 0)
+	)
 	for i = 1, 4 do
 		local a = i * math.pi / 2
-		attach(model, body, part({ Name = "Kernel", Shape = Enum.PartType.Ball, Size = Vector3.one * 0.55 * s, Color = Color3.fromRGB(255, 240, 170) }), CFrame.new(math.cos(a) * 0.35 * s, 2.0 * s, math.sin(a) * 0.35 * s))
+		attach(
+			model,
+			body,
+			part({
+				Name = "Kernel",
+				Shape = Enum.PartType.Ball,
+				Size = Vector3.one * 0.55 * s,
+				Color = Color3.fromRGB(255, 240, 170),
+			}),
+			CFrame.new(math.cos(a) * 0.35 * s, 2.0 * s, math.sin(a) * 0.35 * s)
+		)
 	end
 end
 
 ACCESSORIES.Sprinkles = function(model, body, s, def)
-	local colors = { Color3.fromRGB(255, 90, 160), Color3.fromRGB(255, 230, 80), Color3.fromRGB(90, 160, 255), Color3.fromRGB(255, 255, 255) }
+	local colors = {
+		Color3.fromRGB(255, 90, 160),
+		Color3.fromRGB(255, 230, 80),
+		Color3.fromRGB(90, 160, 255),
+		Color3.fromRGB(255, 255, 255),
+	}
 	for i = 1, 8 do
 		local a = i * math.pi / 4
-		attach(model, body, part({ Name = "Sprinkle", Size = Vector3.new(0.12, 0.12, 0.4) * s, Color = colors[(i % #colors) + 1] }), CFrame.new(math.cos(a) * 1.0 * s, 0.9 * s, math.sin(a) * 1.0 * s) * CFrame.Angles(0, a, math.rad(30)))
+		attach(
+			model,
+			body,
+			part({ Name = "Sprinkle", Size = Vector3.new(0.12, 0.12, 0.4) * s, Color = colors[(i % #colors) + 1] }),
+			CFrame.new(math.cos(a) * 1.0 * s, 0.9 * s, math.sin(a) * 1.0 * s) * CFrame.Angles(0, a, math.rad(30))
+		)
 	end
 end
 
 ACCESSORIES.Lamp = function(model, body, s, def)
-	attach(model, body, part({ Name = "Stalk", Size = Vector3.new(0.15, 0.9, 0.15) * s, Color = Color3.fromRGB(60, 50, 60) }), CFrame.new(0, 1.6 * s, 0))
-	local bulb = attach(model, body, part({ Name = "Bulb", Shape = Enum.PartType.Ball, Size = Vector3.one * 0.7 * s, Color = Color3.fromRGB(255, 230, 120), Material = Enum.Material.Neon }), CFrame.new(0, 2.15 * s, 0))
+	attach(
+		model,
+		body,
+		part({ Name = "Stalk", Size = Vector3.new(0.15, 0.9, 0.15) * s, Color = Color3.fromRGB(60, 50, 60) }),
+		CFrame.new(0, 1.6 * s, 0)
+	)
+	local bulb = attach(
+		model,
+		body,
+		part({
+			Name = "Bulb",
+			Shape = Enum.PartType.Ball,
+			Size = Vector3.one * 0.7 * s,
+			Color = Color3.fromRGB(255, 230, 120),
+			Material = Enum.Material.Neon,
+		}),
+		CFrame.new(0, 2.15 * s, 0)
+	)
 	local light = Instance.new("PointLight")
 	light.Color = Color3.fromRGB(255, 210, 120)
 	light.Range = 10
@@ -96,60 +163,189 @@ ACCESSORIES.Lamp = function(model, body, s, def)
 end
 
 ACCESSORIES.Balloon = function(model, body, s, def)
-	attach(model, body, part({ Name = "String", Size = Vector3.new(0.06, 2.2, 0.06) * s, Color = Color3.new(1, 1, 1) }), CFrame.new(0.9 * s, 2.0 * s, 0))
-	attach(model, body, part({ Name = "Balloon", Size = Vector3.new(1.3, 1.6, 1.3) * s, Color = Color3.fromRGB(255, 80, 110), Mesh = { Type = Enum.MeshType.Sphere } }), CFrame.new(0.9 * s, 3.4 * s, 0))
+	attach(
+		model,
+		body,
+		part({ Name = "String", Size = Vector3.new(0.06, 2.2, 0.06) * s, Color = Color3.new(1, 1, 1) }),
+		CFrame.new(0.9 * s, 2.0 * s, 0)
+	)
+	attach(
+		model,
+		body,
+		part({
+			Name = "Balloon",
+			Size = Vector3.new(1.3, 1.6, 1.3) * s,
+			Color = Color3.fromRGB(255, 80, 110),
+			Mesh = { Type = Enum.MeshType.Sphere },
+		}),
+		CFrame.new(0.9 * s, 3.4 * s, 0)
+	)
 end
 
 ACCESSORIES.Wobble = function(model, body, s, def)
 	body.Material = Enum.Material.Glass
 	body.Transparency = 0.25
-	attach(model, body, part({ Name = "Core", Shape = Enum.PartType.Ball, Size = Vector3.one * 1.2 * s, Color = lighten(def.color, 0.4), Material = Enum.Material.Neon }), CFrame.new(0, -0.2 * s, 0.2 * s))
+	attach(
+		model,
+		body,
+		part({
+			Name = "Core",
+			Shape = Enum.PartType.Ball,
+			Size = Vector3.one * 1.2 * s,
+			Color = lighten(def.color, 0.4),
+			Material = Enum.Material.Neon,
+		}),
+		CFrame.new(0, -0.2 * s, 0.2 * s)
+	)
 end
 
 ACCESSORIES.Pole = function(model, body, s, def)
-	attach(model, body, part({ Name = "Pole", Shape = Enum.PartType.Cylinder, Size = Vector3.new(5 * s, 0.3 * s, 0.3 * s), Color = Color3.fromRGB(255, 210, 90), Material = Enum.Material.Metal }), CFrame.new(0, 0.5 * s, -0.9 * s) * CFrame.Angles(0, 0, math.rad(90)))
+	attach(
+		model,
+		body,
+		part({
+			Name = "Pole",
+			Shape = Enum.PartType.Cylinder,
+			Size = Vector3.new(5 * s, 0.3 * s, 0.3 * s),
+			Color = Color3.fromRGB(255, 210, 90),
+			Material = Enum.Material.Metal,
+		}),
+		CFrame.new(0, 0.5 * s, -0.9 * s) * CFrame.Angles(0, 0, math.rad(90))
+	)
 end
 
 ACCESSORIES.Moon = function(model, body, s, def)
-	attach(model, body, part({ Name = "Moon", Shape = Enum.PartType.Ball, Size = Vector3.one * 0.9 * s, Color = Color3.fromRGB(255, 245, 170), Material = Enum.Material.Neon }), CFrame.new(-0.7 * s, 1.55 * s, 0))
-	attach(model, body, part({ Name = "MoonBite", Shape = Enum.PartType.Ball, Size = Vector3.one * 0.75 * s, Color = def.color }), CFrame.new(-0.4 * s, 1.7 * s, 0))
+	attach(
+		model,
+		body,
+		part({
+			Name = "Moon",
+			Shape = Enum.PartType.Ball,
+			Size = Vector3.one * 0.9 * s,
+			Color = Color3.fromRGB(255, 245, 170),
+			Material = Enum.Material.Neon,
+		}),
+		CFrame.new(-0.7 * s, 1.55 * s, 0)
+	)
+	attach(
+		model,
+		body,
+		part({ Name = "MoonBite", Shape = Enum.PartType.Ball, Size = Vector3.one * 0.75 * s, Color = def.color }),
+		CFrame.new(-0.4 * s, 1.7 * s, 0)
+	)
 end
 
 ACCESSORIES.Comet = function(model, body, s, def)
 	for i = 1, 3 do
-		attach(model, body, part({ Name = "Tail", Shape = Enum.PartType.Ball, Size = Vector3.one * (1.1 - i * 0.25) * s, Color = Color3.fromRGB(140, 200, 255), Material = Enum.Material.Neon, Transparency = 0.15 * i }), CFrame.new(0, 0.6 * s, (0.9 + i * 0.7) * s))
+		attach(
+			model,
+			body,
+			part({
+				Name = "Tail",
+				Shape = Enum.PartType.Ball,
+				Size = Vector3.one * (1.1 - i * 0.25) * s,
+				Color = Color3.fromRGB(140, 200, 255),
+				Material = Enum.Material.Neon,
+				Transparency = 0.15 * i,
+			}),
+			CFrame.new(0, 0.6 * s, (0.9 + i * 0.7) * s)
+		)
 	end
 end
 
 ACCESSORIES.Star = function(model, body, s, def)
 	for i = 0, 2 do
-		attach(model, body, part({ Name = "StarRay", Size = Vector3.new(1.6, 0.35, 0.2) * s, Color = Color3.fromRGB(255, 240, 90), Material = Enum.Material.Neon }), CFrame.new(0, 1.8 * s, 0) * CFrame.Angles(0, 0, math.rad(i * 60)))
+		attach(
+			model,
+			body,
+			part({
+				Name = "StarRay",
+				Size = Vector3.new(1.6, 0.35, 0.2) * s,
+				Color = Color3.fromRGB(255, 240, 90),
+				Material = Enum.Material.Neon,
+			}),
+			CFrame.new(0, 1.8 * s, 0) * CFrame.Angles(0, 0, math.rad(i * 60))
+		)
 	end
 end
 
 ACCESSORIES.Crystal = function(model, body, s, def)
 	body.Material = Enum.Material.Glass
 	body.Transparency = 0.15
-	attach(model, body, part({ Name = "Gem", Size = Vector3.one * 0.9 * s, Color = Color3.fromRGB(120, 255, 255), Material = Enum.Material.Neon }), CFrame.new(0, 1.8 * s, 0) * CFrame.Angles(math.rad(45), 0, math.rad(45)))
+	attach(
+		model,
+		body,
+		part({
+			Name = "Gem",
+			Size = Vector3.one * 0.9 * s,
+			Color = Color3.fromRGB(120, 255, 255),
+			Material = Enum.Material.Neon,
+		}),
+		CFrame.new(0, 1.8 * s, 0) * CFrame.Angles(math.rad(45), 0, math.rad(45))
+	)
 end
 
 ACCESSORIES.Prism = function(model, body, s, def)
-	local colors = { Color3.fromRGB(255, 90, 90), Color3.fromRGB(255, 220, 80), Color3.fromRGB(90, 255, 140), Color3.fromRGB(90, 160, 255) }
+	local colors = {
+		Color3.fromRGB(255, 90, 90),
+		Color3.fromRGB(255, 220, 80),
+		Color3.fromRGB(90, 255, 140),
+		Color3.fromRGB(90, 160, 255),
+	}
 	for i, c in ipairs(colors) do
 		local a = (i - 1) * math.pi / 2
-		attach(model, body, part({ Name = "Shard", Size = Vector3.new(0.3, 0.9, 0.3) * s, Color = c, Material = Enum.Material.Neon }), CFrame.new(math.cos(a) * 0.6 * s, 1.55 * s, math.sin(a) * 0.6 * s) * CFrame.Angles(0, a, math.rad(20)))
+		attach(
+			model,
+			body,
+			part({ Name = "Shard", Size = Vector3.new(0.3, 0.9, 0.3) * s, Color = c, Material = Enum.Material.Neon }),
+			CFrame.new(math.cos(a) * 0.6 * s, 1.55 * s, math.sin(a) * 0.6 * s) * CFrame.Angles(0, a, math.rad(20))
+		)
 	end
 end
 
 ACCESSORIES.Aurora = function(model, body, s, def)
-	attach(model, body, part({ Name = "Halo", Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.15, 2.4, 2.4) * s, Color = Color3.fromRGB(120, 255, 220), Material = Enum.Material.Neon, Transparency = 0.2 }), CFrame.new(0, 2.0 * s, 0) * CFrame.Angles(0, 0, math.rad(90)))
+	attach(
+		model,
+		body,
+		part({
+			Name = "Halo",
+			Shape = Enum.PartType.Cylinder,
+			Size = Vector3.new(0.15, 2.4, 2.4) * s,
+			Color = Color3.fromRGB(120, 255, 220),
+			Material = Enum.Material.Neon,
+			Transparency = 0.2,
+		}),
+		CFrame.new(0, 2.0 * s, 0) * CFrame.Angles(0, 0, math.rad(90))
+	)
 end
 
 ACCESSORIES.Crown = function(model, body, s, def)
-	attach(model, body, part({ Name = "CrownBase", Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.5, 1.5, 1.5) * s, Color = Color3.fromRGB(255, 200, 40), Material = Enum.Material.Metal }), CFrame.new(0, 1.5 * s, 0) * CFrame.Angles(0, 0, math.rad(90)))
+	attach(
+		model,
+		body,
+		part({
+			Name = "CrownBase",
+			Shape = Enum.PartType.Cylinder,
+			Size = Vector3.new(0.5, 1.5, 1.5) * s,
+			Color = Color3.fromRGB(255, 200, 40),
+			Material = Enum.Material.Metal,
+		}),
+		CFrame.new(0, 1.5 * s, 0) * CFrame.Angles(0, 0, math.rad(90))
+	)
 	for i = 1, 5 do
 		local a = i * math.pi * 2 / 5
-		attach(model, body, part({ Name = "CrownGem", Shape = Enum.PartType.Ball, Size = Vector3.one * 0.35 * s, Color = Color3.fromRGB(255, 60, 120), Material = Enum.Material.Neon }), CFrame.new(math.cos(a) * 0.6 * s, 1.95 * s, math.sin(a) * 0.6 * s))
+		attach(
+			model,
+			body,
+			part({
+				Name = "CrownGem",
+				Shape = Enum.PartType.Ball,
+				Size = Vector3.one * 0.35 * s,
+				Color = Color3.fromRGB(255, 60, 120),
+				Material = Enum.Material.Neon,
+			}),
+			CFrame.new(math.cos(a) * 0.6 * s, 1.95 * s, math.sin(a) * 0.6 * s)
+		)
 	end
 end
 
@@ -183,12 +379,63 @@ function BooModel.build(booKey: string, opts): Model
 
 	-- Olhões (frente = -Z do corpo)
 	for side = -1, 1, 2 do
-		attach(model, body, part({ Name = "Eye", Shape = Enum.PartType.Ball, Size = Vector3.one * 0.95 * s, Color = Color3.new(1, 1, 1) }), CFrame.new(side * 0.55 * s, 0.25 * s, -1.05 * s))
-		attach(model, body, part({ Name = "Pupil", Shape = Enum.PartType.Ball, Size = Vector3.one * 0.5 * s, Color = Color3.fromRGB(30, 25, 40) }), CFrame.new(side * 0.55 * s, 0.22 * s, -1.42 * s))
-		attach(model, body, part({ Name = "Shine", Shape = Enum.PartType.Ball, Size = Vector3.one * 0.16 * s, Color = Color3.new(1, 1, 1), Material = Enum.Material.Neon }), CFrame.new(side * 0.55 * s + 0.12 * s, 0.36 * s, -1.6 * s))
-		attach(model, body, part({ Name = "Cheek", Size = Vector3.new(0.5, 0.25, 0.15) * s, Color = Color3.fromRGB(255, 130, 160), Mesh = { Type = Enum.MeshType.Sphere } }), CFrame.new(side * 0.95 * s, -0.25 * s, -1.15 * s))
+		attach(
+			model,
+			body,
+			part({
+				Name = "Eye",
+				Shape = Enum.PartType.Ball,
+				Size = Vector3.one * 0.95 * s,
+				Color = Color3.new(1, 1, 1),
+			}),
+			CFrame.new(side * 0.55 * s, 0.25 * s, -1.05 * s)
+		)
+		attach(
+			model,
+			body,
+			part({
+				Name = "Pupil",
+				Shape = Enum.PartType.Ball,
+				Size = Vector3.one * 0.5 * s,
+				Color = Color3.fromRGB(30, 25, 40),
+			}),
+			CFrame.new(side * 0.55 * s, 0.22 * s, -1.42 * s)
+		)
+		attach(
+			model,
+			body,
+			part({
+				Name = "Shine",
+				Shape = Enum.PartType.Ball,
+				Size = Vector3.one * 0.16 * s,
+				Color = Color3.new(1, 1, 1),
+				Material = Enum.Material.Neon,
+			}),
+			CFrame.new(side * 0.55 * s + 0.12 * s, 0.36 * s, -1.6 * s)
+		)
+		attach(
+			model,
+			body,
+			part({
+				Name = "Cheek",
+				Size = Vector3.new(0.5, 0.25, 0.15) * s,
+				Color = Color3.fromRGB(255, 130, 160),
+				Mesh = { Type = Enum.MeshType.Sphere },
+			}),
+			CFrame.new(side * 0.95 * s, -0.25 * s, -1.15 * s)
+		)
 	end
-	attach(model, body, part({ Name = "Mouth", Size = Vector3.new(0.35, 0.25, 0.12) * s, Color = Color3.fromRGB(60, 20, 40), Mesh = { Type = Enum.MeshType.Sphere } }), CFrame.new(0, -0.35 * s, -1.38 * s))
+	attach(
+		model,
+		body,
+		part({
+			Name = "Mouth",
+			Size = Vector3.new(0.35, 0.25, 0.12) * s,
+			Color = Color3.fromRGB(60, 20, 40),
+			Mesh = { Type = Enum.MeshType.Sphere },
+		}),
+		CFrame.new(0, -0.35 * s, -1.38 * s)
+	)
 
 	local acc = ACCESSORIES[def.accessory]
 	if acc then

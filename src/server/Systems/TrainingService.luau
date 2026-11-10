@@ -15,7 +15,13 @@ local stations: { [string]: BasePart } = {}
 
 local STATS = {
 	Speed = { field = "Speed", trains = "SpeedTrains", per = "SpeedPerTrain", max = "MaxSpeed", label = "Speed" },
-	Throw = { field = "ThrowPower", trains = "ThrowTrains", per = "ThrowPerTrain", max = "MaxThrow", label = "Throw Power" },
+	Throw = {
+		field = "ThrowPower",
+		trains = "ThrowTrains",
+		per = "ThrowPerTrain",
+		max = "MaxThrow",
+		label = "Throw Power",
+	},
 }
 
 function TrainingService.cost(data, stat: string): number

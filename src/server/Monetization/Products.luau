@@ -49,9 +49,15 @@ end
 local GRANTS = {}
 
 GRANTS.ServerLuck = function(player, data, def)
-	table.insert(luckEntries, { mult = def.mult, endsAt = Workspace:GetServerTimeNow() + def.duration, buyer = player.DisplayName })
+	table.insert(
+		luckEntries,
+		{ mult = def.mult, endsAt = Workspace:GetServerTimeNow() + def.duration, buyer = player.DisplayName }
+	)
 	publishLuck()
-	ctx.notifyAll(string.format("%s liberou %dx Luck por %d min!", player.DisplayName, def.mult, def.duration // 60), "rare")
+	ctx.notifyAll(
+		string.format("%s liberou %dx Luck por %d min!", player.DisplayName, def.mult, def.duration // 60),
+		"rare"
+	)
 	ctx.fx("LuckStarted", { buyer = player.DisplayName, mult = def.mult })
 	return true
 end

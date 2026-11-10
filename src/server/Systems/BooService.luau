@@ -142,7 +142,10 @@ local function spawnZoneBoo(zone)
 	local angle = rng:NextNumber() * math.pi * 2
 	local dist = math.sqrt(rng:NextNumber()) * zone.radius * 0.8
 	local pos = zone.center + Vector3.new(math.cos(angle) * dist, 2.2, math.sin(angle) * dist)
-	local model = BooModel.build(key, { anchored = true, cframe = CFrame.new(pos) * CFrame.Angles(0, rng:NextNumber() * math.pi * 2, 0) })
+	local model = BooModel.build(
+		key,
+		{ anchored = true, cframe = CFrame.new(pos) * CFrame.Angles(0, rng:NextNumber() * math.pi * 2, 0) }
+	)
 	model:SetAttribute("Zone", zone.name)
 	model:SetAttribute("SpawnedAt", os.clock())
 	BooModel.addLabel(model)
@@ -166,7 +169,10 @@ local function spawnZoneBoo(zone)
 
 	local tier = Rarity.booTier(key)
 	if tier >= Rarity.tier("Legendary") then
-		ctx.notifyAll(string.format("Um %s %s apareceu em %s!", key, Rarity.label(Config.Boos[key].rarity), zone.label), "rare")
+		ctx.notifyAll(
+			string.format("Um %s %s apareceu em %s!", key, Rarity.label(Config.Boos[key].rarity), zone.label),
+			"rare"
+		)
 	end
 end
 
@@ -199,10 +205,16 @@ function BooService.tryCapture(player: Player, model: Model)
 		return
 	end
 	if BooService.stat(data) < zone.minStat then
-		ctx.notify(player, string.format("Você precisa de %d de Speed ou Throw para capturar em %s.", zone.minStat, zone.label), "warn")
+		ctx.notify(
+			player,
+			string.format("Você precisa de %d de Speed ou Throw para capturar em %s.", zone.minStat, zone.label),
+			"warn"
+		)
 		return
 	end
-	local range = Config.World.CaptureRange + math.min(data.ThrowPower * Config.Economy.ThrowRangeBonusPerPoint, Config.Economy.ThrowRangeBonusMax) + 2
+	local range = Config.World.CaptureRange
+		+ math.min(data.ThrowPower * Config.Economy.ThrowRangeBonusPerPoint, Config.Economy.ThrowRangeBonusMax)
+		+ 2
 	if not ctx.Net.near(player, model.PrimaryPart.Position, range) then
 		return
 	end
@@ -227,9 +239,22 @@ function BooService.tryCapture(player: Player, model: Model)
 	local where = giveBoo(player, data, key)
 	local def = Config.Boos[key]
 	ctx.fx("Capture", { userId = player.UserId, booKey = key, position = position, lucky = lucky })
-	ctx.notify(player, string.format("Você capturou %s (%s)%s%s", def.name, Rarity.label(def.rarity), lucky and " com Super Sorte" or "", where == "placed" and " e ele já está na sua base!" or "!"), "success")
+	ctx.notify(
+		player,
+		string.format(
+			"Você capturou %s (%s)%s%s",
+			def.name,
+			Rarity.label(def.rarity),
+			lucky and " com Super Sorte" or "",
+			where == "placed" and " e ele já está na sua base!" or "!"
+		),
+		"success"
+	)
 	if Rarity.tier(def.rarity) >= Rarity.tier("Epic") then
-		ctx.notifyAll(string.format("%s capturou um %s %s!", player.DisplayName, def.name, Rarity.label(def.rarity)), "rare")
+		ctx.notifyAll(
+			string.format("%s capturou um %s %s!", player.DisplayName, def.name, Rarity.label(def.rarity)),
+			"rare"
+		)
 	end
 	ctx.PlayerData.markDirty(player)
 end
@@ -524,7 +549,10 @@ function BooService.trySteal(thief: Player, model: Model)
 	end
 	ctx.notify(thief, string.format("Você pegou %s! Corra para a sua base!", key), "info")
 	ctx.notify(victim, string.format("%s está roubando seu %s! Pegue de volta!", thief.DisplayName, key), "danger")
-	ctx.fx("StealAlert", { thief = thief.DisplayName, victim = victim.DisplayName, booKey = key, thiefId = thief.UserId })
+	ctx.fx(
+		"StealAlert",
+		{ thief = thief.DisplayName, victim = victim.DisplayName, booKey = key, thiefId = thief.UserId }
+	)
 end
 
 function BooService.onPlacedPrompt(player: Player, model: Model)
@@ -586,7 +614,10 @@ function BooService.spawnDecoy(player: Player, duration: number): boolean
 	local baits = { "JellyBoo", "MoonBoo", "CometBoo", "StarlightBoo" }
 	local look = baits[rng:NextInteger(1, #baits)]
 	local pos = pad.Position + Vector3.new(0, 1.9, 0)
-	local model = BooModel.build(look, { anchored = true, decoy = true, cframe = CFrame.lookAt(pos, pos + (plot.Floor :: BasePart).CFrame.LookVector) })
+	local model = BooModel.build(
+		look,
+		{ anchored = true, decoy = true, cframe = CFrame.lookAt(pos, pos + (plot.Floor :: BasePart).CFrame.LookVector) }
+	)
 	model.Name = "Decoy_" .. slot
 	model:SetAttribute("OwnerUserId", player.UserId)
 	model:SetAttribute("Decoy", true)

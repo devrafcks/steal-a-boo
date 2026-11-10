@@ -101,13 +101,21 @@ function GamePasses.init(c)
 		for attempt = 1, 4 do
 			if checkApi(player, passId) then
 				apply(player, key)
-				ctx.notify(player, string.format("Você recebeu %s! Obrigado pelo apoio!", Config.GamePasses[key].name), "success")
+				ctx.notify(
+					player,
+					string.format("Você recebeu %s! Obrigado pelo apoio!", Config.GamePasses[key].name),
+					"success"
+				)
 				ctx.fx("Purchase", { userId = player.UserId, name = Config.GamePasses[key].name })
 				return
 			end
 			task.wait(attempt * 1.5)
 		end
-		ctx.notify(player, "A compra foi feita, mas a Roblox ainda não confirmou. O passe aparece ao entrar de novo.", "warn")
+		ctx.notify(
+			player,
+			"A compra foi feita, mas a Roblox ainda não confirmou. O passe aparece ao entrar de novo.",
+			"warn"
+		)
 	end)
 end
 

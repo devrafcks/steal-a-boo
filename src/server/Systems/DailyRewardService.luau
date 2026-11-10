@@ -47,7 +47,11 @@ function DailyRewardService.claim(player: Player)
 	end
 	if not DailyRewardService.canClaim(data) then
 		local left = (today() + 1) * 86400 - os.time()
-		ctx.notify(player, string.format("Volte em %dh%02dm para o próximo Daily.", left // 3600, (left % 3600) // 60), "info")
+		ctx.notify(
+			player,
+			string.format("Volte em %dh%02dm para o próximo Daily.", left // 3600, (left % 3600) // 60),
+			"info"
+		)
 		return
 	end
 	local streak = DailyRewardService.nextStreak(data)

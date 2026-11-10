@@ -25,37 +25,142 @@ local cooldownEnds: { [string]: number } = {}
 ----------------------------------------------------------------------
 -- Painel de status (topo esquerdo)
 ----------------------------------------------------------------------
-local stats = UI.make("Frame", { Name = "Stats", BackgroundColor3 = T.Panel, BackgroundTransparency = 0.1, Position = UDim2.fromOffset(12, 12), Size = UDim2.fromOffset(250, 128), Parent = UI.root })
+local stats = UI.make(
+	"Frame",
+	{
+		Name = "Stats",
+		BackgroundColor3 = T.Panel,
+		BackgroundTransparency = 0.1,
+		Position = UDim2.fromOffset(12, 12),
+		Size = UDim2.fromOffset(250, 128),
+		Parent = UI.root,
+	}
+)
 UI.corner(stats, 16)
 UI.stroke(stats, 3)
-local cashLabel = UI.text(stats, { Text = "$0", Font = T.FontTitle, Color = T.Yellow, Size = UDim2.new(1, -20, 0, 40), Position = UDim2.fromOffset(12, 6), XAlign = Enum.TextXAlignment.Left })
-local incomeLabel = UI.text(stats, { Text = "+$0/s", Color = T.Green, Size = UDim2.new(1, -20, 0, 24), Position = UDim2.fromOffset(12, 46), XAlign = Enum.TextXAlignment.Left })
-local statLine = UI.text(stats, { Text = "", Color = T.Muted, Size = UDim2.new(1, -20, 0, 22), Position = UDim2.fromOffset(12, 72), XAlign = Enum.TextXAlignment.Left, MaxTextSize = 20 })
-local statLine2 = UI.text(stats, { Text = "", Color = T.Muted, Size = UDim2.new(1, -20, 0, 22), Position = UDim2.fromOffset(12, 96), XAlign = Enum.TextXAlignment.Left, MaxTextSize = 20 })
+local cashLabel = UI.text(
+	stats,
+	{
+		Text = "$0",
+		Font = T.FontTitle,
+		Color = T.Yellow,
+		Size = UDim2.new(1, -20, 0, 40),
+		Position = UDim2.fromOffset(12, 6),
+		XAlign = Enum.TextXAlignment.Left,
+	}
+)
+local incomeLabel = UI.text(
+	stats,
+	{
+		Text = "+$0/s",
+		Color = T.Green,
+		Size = UDim2.new(1, -20, 0, 24),
+		Position = UDim2.fromOffset(12, 46),
+		XAlign = Enum.TextXAlignment.Left,
+	}
+)
+local statLine = UI.text(
+	stats,
+	{
+		Text = "",
+		Color = T.Muted,
+		Size = UDim2.new(1, -20, 0, 22),
+		Position = UDim2.fromOffset(12, 72),
+		XAlign = Enum.TextXAlignment.Left,
+		MaxTextSize = 20,
+	}
+)
+local statLine2 = UI.text(
+	stats,
+	{
+		Text = "",
+		Color = T.Muted,
+		Size = UDim2.new(1, -20, 0, 22),
+		Position = UDim2.fromOffset(12, 96),
+		XAlign = Enum.TextXAlignment.Left,
+		MaxTextSize = 20,
+	}
+)
 
 ----------------------------------------------------------------------
 -- Banner de sorte do servidor e boosts (topo centro)
 ----------------------------------------------------------------------
-local banner = UI.make("Frame", { Name = "LuckBanner", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 12), Size = UDim2.fromOffset(460, 50), BackgroundColor3 = Color3.fromRGB(60, 180, 90), Visible = false, Parent = UI.root })
+local banner = UI.make(
+	"Frame",
+	{
+		Name = "LuckBanner",
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 12),
+		Size = UDim2.fromOffset(460, 50),
+		BackgroundColor3 = Color3.fromRGB(60, 180, 90),
+		Visible = false,
+		Parent = UI.root,
+	}
+)
 UI.corner(banner, 14)
 UI.stroke(banner, 3)
-UI.make("UIGradient", { Color = ColorSequence.new({ ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 120, 200)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 230, 90)), ColorSequenceKeypoint.new(1, Color3.fromRGB(90, 220, 255)) }), Parent = banner })
-local bannerText = UI.text(banner, { Text = "", Font = T.FontTitle, Size = UDim2.new(1, -16, 1, -8), Position = UDim2.fromOffset(8, 4) })
+UI.make(
+	"UIGradient",
+	{
+		Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 120, 200)),
+			ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 230, 90)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(90, 220, 255)),
+		}),
+		Parent = banner,
+	}
+)
+local bannerText = UI.text(
+	banner,
+	{ Text = "", Font = T.FontTitle, Size = UDim2.new(1, -16, 1, -8), Position = UDim2.fromOffset(8, 4) }
+)
 
-local carryBanner = UI.make("Frame", { Name = "CarryBanner", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 68), Size = UDim2.fromOffset(460, 40), BackgroundColor3 = T.Orange, Visible = false, Parent = UI.root })
+local carryBanner = UI.make(
+	"Frame",
+	{
+		Name = "CarryBanner",
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 68),
+		Size = UDim2.fromOffset(460, 40),
+		BackgroundColor3 = T.Orange,
+		Visible = false,
+		Parent = UI.root,
+	}
+)
 UI.corner(carryBanner, 12)
 UI.stroke(carryBanner, 3)
-local carryText = UI.text(carryBanner, { Text = "", Size = UDim2.new(1, -16, 1, -8), Position = UDim2.fromOffset(8, 4) })
+local carryText =
+	UI.text(carryBanner, { Text = "", Size = UDim2.new(1, -16, 1, -8), Position = UDim2.fromOffset(8, 4) })
 
 ----------------------------------------------------------------------
 -- Botões laterais
 ----------------------------------------------------------------------
-local side = UI.make("Frame", { Name = "SideButtons", BackgroundTransparency = 1, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 20), Size = UDim2.fromOffset(110, 420), Parent = UI.root })
+local side = UI.make(
+	"Frame",
+	{
+		Name = "SideButtons",
+		BackgroundTransparency = 1,
+		AnchorPoint = Vector2.new(0, 0.5),
+		Position = UDim2.new(0, 12, 0.5, 20),
+		Size = UDim2.fromOffset(110, 420),
+		Parent = UI.root,
+	}
+)
 UI.make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = side })
 
 local dailyBadge
 local function sideButton(order: number, text: string, color: Color3, onClick)
-	local b = UI.button(side, { Text = text, Color = color, Size = UDim2.fromOffset(110, 52), LayoutOrder = order, OnClick = onClick, MaxTextSize = 22 })
+	local b = UI.button(
+		side,
+		{
+			Text = text,
+			Color = color,
+			Size = UDim2.fromOffset(110, 52),
+			LayoutOrder = order,
+			OnClick = onClick,
+			MaxTextSize = 22,
+		}
+	)
 	return b
 end
 sideButton(1, "🛒 Loja", T.Pink, function()
@@ -67,7 +172,18 @@ end)
 local dailyButton = sideButton(3, "🎁 Daily", T.Yellow, function()
 	UI.toggle("Daily")
 end)
-dailyBadge = UI.make("Frame", { Name = "Badge", BackgroundColor3 = T.Red, Size = UDim2.fromOffset(22, 22), Position = UDim2.new(1, -14, 0, -8), Visible = false, ZIndex = 5, Parent = dailyButton })
+dailyBadge = UI.make(
+	"Frame",
+	{
+		Name = "Badge",
+		BackgroundColor3 = T.Red,
+		Size = UDim2.fromOffset(22, 22),
+		Position = UDim2.new(1, -14, 0, -8),
+		Visible = false,
+		ZIndex = 5,
+		Parent = dailyButton,
+	}
+)
 UI.corner(dailyBadge, 11)
 UI.text(dailyBadge, { Text = "!", ZIndex = 6 })
 sideButton(4, "♻️ Rebirth", T.Green, function()
@@ -97,8 +213,27 @@ local lockButton, lockLabel = UI.button(UI.root, {
 ----------------------------------------------------------------------
 -- Hotbar (teclas 1..9)
 ----------------------------------------------------------------------
-local hotbar = UI.make("Frame", { Name = "Hotbar", BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -12), Size = UDim2.fromOffset(9 * 66, 64), Parent = UI.root })
-UI.make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), HorizontalAlignment = Enum.HorizontalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder, Parent = hotbar })
+local hotbar = UI.make(
+	"Frame",
+	{
+		Name = "Hotbar",
+		BackgroundTransparency = 1,
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, -12),
+		Size = UDim2.fromOffset(9 * 66, 64),
+		Parent = UI.root,
+	}
+)
+UI.make(
+	"UIListLayout",
+	{
+		FillDirection = Enum.FillDirection.Horizontal,
+		Padding = UDim.new(0, 6),
+		HorizontalAlignment = Enum.HorizontalAlignment.Center,
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Parent = hotbar,
+	}
+)
 
 local slots = {}
 
@@ -118,14 +253,71 @@ function HUD.use(index: number)
 end
 
 for i, item in ipairs(Config.Consumables) do
-	local b = UI.make("TextButton", { Name = item.key, AutoButtonColor = false, Text = "", BackgroundColor3 = T.Panel, Size = UDim2.fromOffset(60, 60), LayoutOrder = i, Parent = hotbar })
+	local b = UI.make(
+		"TextButton",
+		{
+			Name = item.key,
+			AutoButtonColor = false,
+			Text = "",
+			BackgroundColor3 = T.Panel,
+			Size = UDim2.fromOffset(60, 60),
+			LayoutOrder = i,
+			Parent = hotbar,
+		}
+	)
 	UI.corner(b, 12)
 	UI.stroke(b, 3)
-	UI.text(b, { Text = item.icon, Size = UDim2.new(1, -14, 1, -22), Position = UDim2.fromOffset(7, 4), Stroke = false })
-	local count = UI.text(b, { Text = "0", Size = UDim2.fromOffset(26, 18), Position = UDim2.new(1, -28, 1, -20), Color = T.Yellow, MaxTextSize = 16, Name = "Count" })
-	UI.text(b, { Text = tostring(i), Size = UDim2.fromOffset(16, 16), Position = UDim2.fromOffset(4, 2), Color = T.Muted, MaxTextSize = 14, Name = "Key" })
-	UI.text(b, { Text = item.label, Size = UDim2.new(1, -4, 0, 14), Position = UDim2.new(0, 2, 1, -16), Color = T.Text, MaxTextSize = 12, Name = "Name", XAlign = Enum.TextXAlignment.Left })
-	local cd = UI.make("Frame", { Name = "Cooldown", BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.45, Size = UDim2.fromScale(1, 0), AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), ZIndex = 4, Parent = b })
+	UI.text(
+		b,
+		{ Text = item.icon, Size = UDim2.new(1, -14, 1, -22), Position = UDim2.fromOffset(7, 4), Stroke = false }
+	)
+	local count = UI.text(
+		b,
+		{
+			Text = "0",
+			Size = UDim2.fromOffset(26, 18),
+			Position = UDim2.new(1, -28, 1, -20),
+			Color = T.Yellow,
+			MaxTextSize = 16,
+			Name = "Count",
+		}
+	)
+	UI.text(
+		b,
+		{
+			Text = tostring(i),
+			Size = UDim2.fromOffset(16, 16),
+			Position = UDim2.fromOffset(4, 2),
+			Color = T.Muted,
+			MaxTextSize = 14,
+			Name = "Key",
+		}
+	)
+	UI.text(
+		b,
+		{
+			Text = item.label,
+			Size = UDim2.new(1, -4, 0, 14),
+			Position = UDim2.new(0, 2, 1, -16),
+			Color = T.Text,
+			MaxTextSize = 12,
+			Name = "Name",
+			XAlign = Enum.TextXAlignment.Left,
+		}
+	)
+	local cd = UI.make(
+		"Frame",
+		{
+			Name = "Cooldown",
+			BackgroundColor3 = Color3.new(0, 0, 0),
+			BackgroundTransparency = 0.45,
+			Size = UDim2.fromScale(1, 0),
+			AnchorPoint = Vector2.new(0, 1),
+			Position = UDim2.fromScale(0, 1),
+			ZIndex = 4,
+			Parent = b,
+		}
+	)
 	UI.corner(cd, 12)
 	b.MouseButton1Click:Connect(function()
 		UI.squash(b)
@@ -170,7 +362,12 @@ RunService.Heartbeat:Connect(function()
 	local left = ends - Workspace:GetServerTimeNow()
 	if luck > 1 and left > 0 then
 		banner.Visible = true
-		bannerText.Text = string.format("%dx LUCK por %s  —  %s", luck, Workspace:GetAttribute("ServerLuckBy") or "?", Format.time(left))
+		bannerText.Text = string.format(
+			"%dx LUCK por %s  —  %s",
+			luck,
+			Workspace:GetAttribute("ServerLuckBy") or "?",
+			Format.time(left)
+		)
 	else
 		banner.Visible = false
 	end

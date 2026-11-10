@@ -27,10 +27,32 @@ end
 function ShopService.catalog(player: Player)
 	local passes, products = {}, {}
 	for key, def in pairs(Config.GamePasses) do
-		table.insert(passes, { key = key, id = def.id, name = def.name, price = def.price, icon = def.icon, desc = def.desc, owned = ctx.Passes.owns(player, key) })
+		table.insert(
+			passes,
+			{
+				key = key,
+				id = def.id,
+				name = def.name,
+				price = def.price,
+				icon = def.icon,
+				desc = def.desc,
+				owned = ctx.Passes.owns(player, key),
+			}
+		)
 	end
 	for key, def in pairs(Config.Products) do
-		table.insert(products, { key = key, id = def.id, name = def.name, price = def.price, icon = def.icon, desc = def.desc, tab = def.tab })
+		table.insert(
+			products,
+			{
+				key = key,
+				id = def.id,
+				name = def.name,
+				price = def.price,
+				icon = def.icon,
+				desc = def.desc,
+				tab = def.tab,
+			}
+		)
 	end
 	table.sort(passes, function(a, b)
 		return a.price < b.price
@@ -75,7 +97,16 @@ function ShopService.buyCarousel(player: Player)
 	local where = ctx.Boos.giveBoo(player, data, key)
 	local def = Config.Boos[key]
 	ctx.fx("Capture", { userId = player.UserId, booKey = key, position = stand.Position + Vector3.new(0, 4, 0) })
-	ctx.notify(player, string.format("O carrossel te deu %s (%s)%s", def.name, Rarity.label(def.rarity), where == "placed" and " — já está na base!" or "!"), "success")
+	ctx.notify(
+		player,
+		string.format(
+			"O carrossel te deu %s (%s)%s",
+			def.name,
+			Rarity.label(def.rarity),
+			where == "placed" and " — já está na base!" or "!"
+		),
+		"success"
+	)
 	ctx.PlayerData.markDirty(player)
 end
 

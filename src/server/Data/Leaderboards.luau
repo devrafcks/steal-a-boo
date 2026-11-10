@@ -91,7 +91,8 @@ local function refresh()
 	local plaza = Workspace.StealABooWorld.Plaza
 	writeBoard(plaza:FindFirstChild("CashBoard"), cashRows, "$")
 	writeBoard(plaza:FindFirstChild("RebirthBoard"), rebirthRows, "")
-	dataValue.Value = HttpService:JSONEncode({ cash = cashRows or {}, rebirths = rebirthRows or {}, available = cashRows ~= nil })
+	dataValue.Value =
+		HttpService:JSONEncode({ cash = cashRows or {}, rebirths = rebirthRows or {}, available = cashRows ~= nil })
 end
 
 function Leaderboards.init(c)

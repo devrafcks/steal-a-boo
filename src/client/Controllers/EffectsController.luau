@@ -97,7 +97,15 @@ task.spawn(function()
 	task.wait(1)
 	for _, d in world:GetDescendants() do
 		if d:IsA("Model") and d:GetAttribute("Spin") then
-			table.insert(spinners, { model = d, base = d:GetPivot(), speed = d:GetAttribute("Spin"), axis = d:GetAttribute("SpinAxis") or "Y" })
+			table.insert(
+				spinners,
+				{
+					model = d,
+					base = d:GetPivot(),
+					speed = d:GetAttribute("Spin"),
+					axis = d:GetAttribute("SpinAxis") or "Y",
+				}
+			)
 		end
 	end
 end)
@@ -187,7 +195,11 @@ local function worldText(position: Vector3, text: string, color: Color3, seconds
 	gui.Parent = p
 	local label = UI.text(gui, { Text = text, Font = T.FontTitle, Color = color })
 	p.Parent = Workspace
-	TweenService:Create(p, TweenInfo.new(seconds or 1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { CFrame = CFrame.new(position + Vector3.new(0, 4, 0)) }):Play()
+	TweenService:Create(
+		p,
+		TweenInfo.new(seconds or 1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ CFrame = CFrame.new(position + Vector3.new(0, 4, 0)) }
+	):Play()
 	TweenService:Create(label, TweenInfo.new(seconds or 1.2), { TextTransparency = 1 }):Play()
 	Debris:AddItem(p, (seconds or 1.2) + 0.1)
 end
@@ -207,13 +219,43 @@ end
 -- Popup central (raridade, rebirth...)
 ----------------------------------------------------------------------
 local function bigPopup(title: string, subtitle: string, color: Color3)
-	local f = UI.make("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.38), Size = UDim2.fromOffset(460, 130), BackgroundColor3 = T.Panel, ZIndex = 85, Parent = UI.overlay })
+	local f = UI.make(
+		"Frame",
+		{
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.38),
+			Size = UDim2.fromOffset(460, 130),
+			BackgroundColor3 = T.Panel,
+			ZIndex = 85,
+			Parent = UI.overlay,
+		}
+	)
 	UI.corner(f, 20)
 	UI.make("UIStroke", { Thickness = 5, Color = color, Parent = f })
-	UI.text(f, { Text = title, Font = T.FontTitle, Color = color, Size = UDim2.new(1, -20, 0, 64), Position = UDim2.fromOffset(10, 8), ZIndex = 86 })
-	UI.text(f, { Text = subtitle, Size = UDim2.new(1, -20, 0, 40), Position = UDim2.fromOffset(10, 78), ZIndex = 86, MaxTextSize = 26 })
+	UI.text(
+		f,
+		{
+			Text = title,
+			Font = T.FontTitle,
+			Color = color,
+			Size = UDim2.new(1, -20, 0, 64),
+			Position = UDim2.fromOffset(10, 8),
+			ZIndex = 86,
+		}
+	)
+	UI.text(
+		f,
+		{
+			Text = subtitle,
+			Size = UDim2.new(1, -20, 0, 40),
+			Position = UDim2.fromOffset(10, 78),
+			ZIndex = 86,
+			MaxTextSize = 26,
+		}
+	)
 	local scale = UI.make("UIScale", { Scale = 0.2, Parent = f })
-	TweenService:Create(scale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	TweenService:Create(scale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 })
+		:Play()
 	task.delay(1.8, function()
 		TweenService:Create(scale, TweenInfo.new(0.2), { Scale = 0 }):Play()
 		task.wait(0.25)
@@ -225,23 +267,73 @@ end
 -- Susto fofo (overlay desenhado com UI, sem imagens)
 ----------------------------------------------------------------------
 local function cuteBooFace(parent: Instance)
-	local face = UI.make("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.45), Size = UDim2.fromOffset(300, 270), BackgroundColor3 = Color3.fromRGB(255, 190, 230), ZIndex = 96, Parent = parent })
+	local face = UI.make(
+		"Frame",
+		{
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.45),
+			Size = UDim2.fromOffset(300, 270),
+			BackgroundColor3 = Color3.fromRGB(255, 190, 230),
+			ZIndex = 96,
+			Parent = parent,
+		}
+	)
 	UI.corner(face, 140)
 	UI.stroke(face, 6)
 	for _, x in ipairs({ 0.32, 0.68 }) do
-		local eye = UI.make("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(x, 0.42), Size = UDim2.fromOffset(70, 80), BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 97, Parent = face })
+		local eye = UI.make(
+			"Frame",
+			{
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(x, 0.42),
+				Size = UDim2.fromOffset(70, 80),
+				BackgroundColor3 = Color3.new(1, 1, 1),
+				ZIndex = 97,
+				Parent = face,
+			}
+		)
 		UI.corner(eye, 40)
-		local pupil = UI.make("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.6), Size = UDim2.fromOffset(36, 40), BackgroundColor3 = Color3.fromRGB(30, 20, 50), ZIndex = 98, Parent = eye })
+		local pupil = UI.make(
+			"Frame",
+			{
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(0.5, 0.6),
+				Size = UDim2.fromOffset(36, 40),
+				BackgroundColor3 = Color3.fromRGB(30, 20, 50),
+				ZIndex = 98,
+				Parent = eye,
+			}
+		)
 		UI.corner(pupil, 20)
 	end
-	local mouth = UI.make("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.75), Size = UDim2.fromOffset(70, 50), BackgroundColor3 = Color3.fromRGB(80, 20, 50), ZIndex = 97, Parent = face })
+	local mouth = UI.make(
+		"Frame",
+		{
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.75),
+			Size = UDim2.fromOffset(70, 50),
+			BackgroundColor3 = Color3.fromRGB(80, 20, 50),
+			ZIndex = 97,
+			Parent = face,
+		}
+	)
 	UI.corner(mouth, 30)
 	return face
 end
 
 local function scared(payload)
 	if payload.reduce then
-		local icon = UI.make("Frame", { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -12, 0, 160), Size = UDim2.fromOffset(200, 44), BackgroundColor3 = T.Pink, ZIndex = 95, Parent = UI.overlay })
+		local icon = UI.make(
+			"Frame",
+			{
+				AnchorPoint = Vector2.new(1, 0),
+				Position = UDim2.new(1, -12, 0, 160),
+				Size = UDim2.fromOffset(200, 44),
+				BackgroundColor3 = T.Pink,
+				ZIndex = 95,
+				Parent = UI.overlay,
+			}
+		)
 		UI.corner(icon, 12)
 		UI.stroke(icon, 3)
 		UI.text(icon, { Text = "👻 Susto de " .. tostring(payload.from), MaxTextSize = 18, ZIndex = 96 })
@@ -251,12 +343,43 @@ local function scared(payload)
 		return
 	end
 	Effects.play("Boo", 0.8)
-	local layer = UI.make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(60, 20, 90), BackgroundTransparency = 0.35, ZIndex = 95, Parent = UI.overlay })
+	local layer = UI.make(
+		"Frame",
+		{
+			Size = UDim2.fromScale(1, 1),
+			BackgroundColor3 = Color3.fromRGB(60, 20, 90),
+			BackgroundTransparency = 0.35,
+			ZIndex = 95,
+			Parent = UI.overlay,
+		}
+	)
 	local face = cuteBooFace(layer)
-	UI.text(layer, { Text = "BOO!", Font = T.FontTitle, Color = T.Yellow, AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0.45, 150), Size = UDim2.fromOffset(400, 90), ZIndex = 97 })
-	UI.text(layer, { Text = "susto de " .. tostring(payload.from), AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0.45, 236), Size = UDim2.fromOffset(400, 34), ZIndex = 97, MaxTextSize = 24 })
+	UI.text(
+		layer,
+		{
+			Text = "BOO!",
+			Font = T.FontTitle,
+			Color = T.Yellow,
+			AnchorPoint = Vector2.new(0.5, 0),
+			Position = UDim2.new(0.5, 0, 0.45, 150),
+			Size = UDim2.fromOffset(400, 90),
+			ZIndex = 97,
+		}
+	)
+	UI.text(
+		layer,
+		{
+			Text = "susto de " .. tostring(payload.from),
+			AnchorPoint = Vector2.new(0.5, 0),
+			Position = UDim2.new(0.5, 0, 0.45, 236),
+			Size = UDim2.fromOffset(400, 34),
+			ZIndex = 97,
+			MaxTextSize = 24,
+		}
+	)
 	local scale = UI.make("UIScale", { Scale = 0.3, Parent = face })
-	TweenService:Create(scale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	TweenService:Create(scale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 })
+		:Play()
 
 	local cam = Workspace.CurrentCamera
 	if cam then
@@ -299,14 +422,24 @@ HANDLERS.Capture = function(p)
 		if tier >= Rarity.tier("Rare") then
 			Effects.play("RareSting")
 		end
-		bigPopup(def.name, Rarity.label(def.rarity) .. string.format("  •  $%d/s", def.incomePerSec) .. (p.lucky and "  •  Super Sorte!" or ""), Rarity.color(def.rarity))
+		bigPopup(
+			def.name,
+			Rarity.label(def.rarity)
+				.. string.format("  •  $%d/s", def.incomePerSec)
+				.. (p.lucky and "  •  Super Sorte!" or ""),
+			Rarity.color(def.rarity)
+		)
 	end
 end
 
 HANDLERS.Train = function(p)
 	local pos = headPos(player.UserId)
 	if pos then
-		worldText(pos + Vector3.new(0, 2, 0), string.format("+%.2f %s", p.gain, p.stat), p.stat == "Speed" and T.Cyan or T.Pink)
+		worldText(
+			pos + Vector3.new(0, 2, 0),
+			string.format("+%.2f %s", p.gain, p.stat),
+			p.stat == "Speed" and T.Cyan or T.Pink
+		)
 	end
 	Effects.play("Coin", 0.5)
 end
