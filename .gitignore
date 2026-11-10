@@ -12,3 +12,4 @@ roblox.toml
 /.claude/
 /build/
 /.luau/
+/.mcp.json
