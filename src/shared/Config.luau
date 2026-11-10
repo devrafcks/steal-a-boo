@@ -14,9 +14,9 @@ local Config = {
 	PlaceVersionNote = "MVP",
 
 	DataStore = {
-		ProfileStoreName = "StealABoo_Player_v1", -- mude o sufixo se quiser resetar o save de todo mundo
-		OrderedCash = "StealABoo_CashAllTime_v1",
-		OrderedRebirths = "StealABoo_Rebirths_v1",
+		ProfileStoreName = "StealABoo_Player_v2", -- mude o sufixo se quiser resetar o save de todo mundo
+		OrderedCash = "StealABoo_CashAllTime_v2",
+		OrderedRebirths = "StealABoo_Rebirths_v2",
 		PurchaseIdMemoryDays = 45, -- por quantos dias lembramos de um PurchaseId já entregue
 		PurchaseIdMaxEntries = 200,
 		LeaderboardPushSeconds = 120, -- grava no OrderedDataStore a cada N segundos
