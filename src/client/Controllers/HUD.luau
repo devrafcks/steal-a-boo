@@ -30,7 +30,7 @@ local stats = UI.make("Frame", {
 	BackgroundColor3 = T.Panel,
 	BackgroundTransparency = 0.1,
 	Position = UDim2.fromOffset(12, 12),
-	Size = UDim2.fromOffset(250, 128),
+	Size = UDim2.fromOffset(250, 152),
 	Parent = UI.root,
 })
 UI.corner(stats, 16)
@@ -55,6 +55,14 @@ local statLine = UI.text(stats, {
 	Color = T.Muted,
 	Size = UDim2.new(1, -20, 0, 22),
 	Position = UDim2.fromOffset(12, 72),
+	XAlign = Enum.TextXAlignment.Left,
+	MaxTextSize = 20,
+})
+local vaultLine = UI.text(stats, {
+	Text = "",
+	Color = T.Yellow,
+	Size = UDim2.new(1, -20, 0, 22),
+	Position = UDim2.fromOffset(12, 120),
 	XAlign = Enum.TextXAlignment.Left,
 	MaxTextSize = 20,
 })
@@ -114,9 +122,8 @@ local carryText =
 local side = UI.make("Frame", {
 	Name = "SideButtons",
 	BackgroundTransparency = 1,
-	AnchorPoint = Vector2.new(0, 0.5),
-	Position = UDim2.new(0, 12, 0.5, 20),
-	Size = UDim2.fromOffset(110, 420),
+	Position = UDim2.fromOffset(12, 176),
+	Size = UDim2.fromOffset(110, 480),
 	Parent = UI.root,
 })
 UI.make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = side })
@@ -159,7 +166,10 @@ end)
 sideButton(5, "🏆 Ranking", T.Orange, function()
 	UI.toggle("Leaderboard")
 end)
-sideButton(6, "⚙️ Ajustes", T.Grey, function()
+sideButton(6, "🏠 Base", Color3.fromRGB(150, 110, 255), function()
+	UI.toggle("Base")
+end)
+sideButton(7, "⚙️ Ajustes", T.Grey, function()
 	UI.toggle("Settings")
 end)
 
@@ -288,7 +298,9 @@ function HUD.openShopTab(_tab: string) end
 ----------------------------------------------------------------------
 local function render(data)
 	cashLabel.Text = "$" .. Format.compact(data.Cash)
-	local boost = (data.Cash2xEnds or 0) > os.time() and "  (2x!)" or ""
+	local boost = (data.IncomeBoostEnds or 0) > os.time() and string.format("  (%dx esteira!)", data.IncomeBoostMult)
+		or ((data.Cash2xEnds or 0) > os.time() and "  (2x!)" or "")
+	vaultLine.Text = string.format("Cofre: $%s  (pise no pad dourado)", Format.compact(data.Vault or 0))
 	incomeLabel.Text = string.format("+$%s/s%s", Format.compact(data.IncomePerSec), boost)
 	statLine.Text = string.format("Speed %.1f  •  Throw %.1f", data.Speed, data.ThrowPower)
 	statLine2.Text = string.format("Rebirths %d  •  Sorte+ %d", data.Rebirths, data.LuckyCaptures)

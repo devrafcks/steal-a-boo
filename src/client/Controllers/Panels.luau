@@ -362,7 +362,101 @@ local function renderSettings(data)
 end
 
 ----------------------------------------------------------------------
+-- Base: andares, cofre e esteiras pagas
+----------------------------------------------------------------------
+local _, baseBody = UI.panel("Base", "Minha Base", UDim2.fromOffset(600, 430))
+local baseInfo = UI.text(baseBody, { Text = "", Size = UDim2.new(1, 0, 0, 120), MaxTextSize = 22, RichText = true })
+local upgradeButton, upgradeLabel = UI.button(baseBody, {
+	Text = "Construir",
+	Color = T.Cyan,
+	Size = UDim2.fromOffset(300, 56),
+	Position = UDim2.new(0.5, -150, 0, 128),
+	OnClick = function()
+		Remotes.get("RequestUpgradeBase"):FireServer()
+	end,
+})
+UI.text(baseBody, {
+	Text = "Esteiras pagas: multiplicam a renda dos seus Boos por 2 minutos",
+	Size = UDim2.new(1, 0, 0, 26),
+	Position = UDim2.fromOffset(0, 200),
+	Color = T.Muted,
+	MaxTextSize = 18,
+})
+local beltRow = UI.make("Frame", {
+	BackgroundTransparency = 1,
+	Size = UDim2.new(1, 0, 0, 120),
+	Position = UDim2.fromOffset(0, 232),
+	Parent = baseBody,
+})
+UI.make("UIListLayout", {
+	FillDirection = Enum.FillDirection.Horizontal,
+	Padding = UDim.new(0, 12),
+	HorizontalAlignment = Enum.HorizontalAlignment.Center,
+	Parent = beltRow,
+})
+for i, key in ipairs({ "Belt2x", "Belt3x", "Belt4x" }) do
+	local def = Config.Products[key]
+	local color = ({ T.Green, T.Orange, T.Pink })[i]
+	local card = UI.make(
+		"Frame",
+		{ BackgroundColor3 = T.PanelLight, Size = UDim2.fromOffset(170, 116), LayoutOrder = i, Parent = beltRow }
+	)
+	UI.corner(card, 12)
+	UI.make("UIStroke", { Thickness = 3, Color = color, Parent = card })
+	UI.text(card, {
+		Text = def.mult .. "x RENDA",
+		Font = T.FontTitle,
+		Color = color,
+		Size = UDim2.new(1, -10, 0, 36),
+		Position = UDim2.fromOffset(5, 6),
+	})
+	UI.text(card, {
+		Text = "2 minutos",
+		Size = UDim2.new(1, -10, 0, 20),
+		Position = UDim2.fromOffset(5, 42),
+		Color = T.Muted,
+		MaxTextSize = 16,
+	})
+	UI.button(card, {
+		Text = "R$ " .. def.price,
+		Color = color,
+		Size = UDim2.new(1, -16, 0, 40),
+		Position = UDim2.new(0, 8, 1, -48),
+		OnClick = function()
+			require(script.Parent.ShopUI).buyProduct(key)
+		end,
+	})
+end
+
+local function renderBase(data)
+	local nextFloor = data.NextFloor
+	local boostText = (data.IncomeBoostEnds or 0) > os.time()
+			and string.format(
+				"\nEsteira ativa: <b>%dx</b> (%s)",
+				data.IncomeBoostMult,
+				Format.time(data.IncomeBoostEnds - os.time())
+			)
+		or ""
+	baseInfo.Text = string.format(
+		"Andares: <b>%d/%d</b>   •   Slots liberados: <b>%d</b>\nCofre: <b>$%s</b> (pise no pad dourado da base)%s",
+		data.BaseLevel or 1,
+		data.MaxLevel or 4,
+		data.SlotCount,
+		Format.compact(data.Vault or 0),
+		boostText
+	)
+	if nextFloor then
+		upgradeLabel.Text = string.format("Construir %s — $%s", nextFloor.name, Format.compact(nextFloor.cost))
+		UI.setDisabled(upgradeButton, data.Cash < nextFloor.cost, T.Cyan)
+	else
+		upgradeLabel.Text = "Base no máximo!"
+		UI.setDisabled(upgradeButton, true)
+	end
+end
+
+----------------------------------------------------------------------
 State.onReady(function(data)
+	renderBase(data)
 	renderInventory(data)
 	renderRebirth(data)
 	renderDaily(data)

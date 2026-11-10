@@ -135,6 +135,9 @@ function UI.button(parent: Instance, props)
 			return
 		end
 		UI.squash(b)
+		if UI.clickSound then
+			UI.clickSound()
+		end
 		if props.OnClick then
 			props.OnClick()
 		end

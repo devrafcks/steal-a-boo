@@ -45,6 +45,18 @@ local function updatePrompts()
 		if lockPrompt then
 			lockPrompt.Enabled = mine
 		end
+		local upgrade = plot:FindFirstChild("UpgradeBoard") and plot.UpgradeBoard:FindFirstChild("UpgradePrompt")
+		if upgrade then
+			upgrade.Enabled = mine
+		end
+		for _, child in plot:GetChildren() do
+			if child.Name:match("^PaidBelt_") then
+				local bp = child:FindFirstChild("BeltPrompt")
+				if bp then
+					bp.Enabled = mine
+				end
+			end
+		end
 		local slots = plot:FindFirstChild("Slots")
 		if slots then
 			for _, pad in slots:GetChildren() do
@@ -90,8 +102,13 @@ function InputController.init()
 	end)
 
 	ProximityPromptService.PromptTriggered:Connect(function(prompt, who)
-		if who == player and prompt:GetAttribute("OpenUI") == "Shop" then
+		if who ~= player then
+			return
+		end
+		if prompt:GetAttribute("OpenUI") == "Shop" then
 			ShopUI.openTab("Boosts")
+		elseif prompt:GetAttribute("BuyProduct") then
+			ShopUI.buyProduct(prompt:GetAttribute("BuyProduct"))
 		end
 	end)
 

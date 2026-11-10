@@ -13,6 +13,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Remotes = require(Shared.Remotes)
+local Config = require(Shared.Config)
+local RunService = game:GetService("RunService")
 
 local UI = require(script.Parent.UIController)
 local HUD = require(script.Parent.HUD)
@@ -179,6 +181,22 @@ function ShopUI.refresh()
 	if ok and result then
 		catalog = result
 		renderTab()
+	end
+end
+
+-- Compra direta de um Dev Product pela chave do Config (usado pelas esteiras pagas)
+function ShopUI.buyProduct(key: string)
+	local def = Config.Products[key]
+	if not def then
+		return
+	end
+	if def.id ~= 0 then
+		MarketplaceService:PromptProductPurchase(player, def.id)
+	elseif RunService:IsStudio() and ReplicatedStorage.Remotes:FindFirstChild("StudioGrant") then
+		ReplicatedStorage.Remotes.StudioGrant:FireServer("Product", key)
+		UI.toast("[Studio] Teste grátis: " .. def.name, "info")
+	else
+		UI.toast(def.name .. " chega em breve!", "info")
 	end
 end
 
