@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "tools/store-art/build.js"
+        ],
+        "createdAt": "2026-11-10T23:28:48.429Z",
+        "reason": "claude: arte de logo do jogo (thumbnail/ícone), reproduz o gradiente do assets/logo.svg; não é texto de UI"
+      }
+    ]
+  }
+}
