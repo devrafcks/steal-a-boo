@@ -55,7 +55,7 @@ end
 
 local ACCESSORIES = {}
 
-ACCESSORIES.Stick = function(model, body, s, def)
+ACCESSORIES.Stick = function(model, body, s, _def)
 	attach(
 		model,
 		body,
@@ -86,7 +86,7 @@ ACCESSORIES.Fluff = function(model, body, s, def)
 	end
 end
 
-ACCESSORIES.Ticket = function(model, body, s, def)
+ACCESSORIES.Ticket = function(model, body, s, _def)
 	attach(
 		model,
 		body,
@@ -95,7 +95,7 @@ ACCESSORIES.Ticket = function(model, body, s, def)
 	)
 end
 
-ACCESSORIES.Popcorn = function(model, body, s, def)
+ACCESSORIES.Popcorn = function(model, body, s, _def)
 	attach(
 		model,
 		body,
@@ -118,7 +118,7 @@ ACCESSORIES.Popcorn = function(model, body, s, def)
 	end
 end
 
-ACCESSORIES.Sprinkles = function(model, body, s, def)
+ACCESSORIES.Sprinkles = function(model, body, s, _def)
 	local colors = {
 		Color3.fromRGB(255, 90, 160),
 		Color3.fromRGB(255, 230, 80),
@@ -136,7 +136,7 @@ ACCESSORIES.Sprinkles = function(model, body, s, def)
 	end
 end
 
-ACCESSORIES.Lamp = function(model, body, s, def)
+ACCESSORIES.Lamp = function(model, body, s, _def)
 	attach(
 		model,
 		body,
@@ -162,7 +162,7 @@ ACCESSORIES.Lamp = function(model, body, s, def)
 	light.Parent = bulb
 end
 
-ACCESSORIES.Balloon = function(model, body, s, def)
+ACCESSORIES.Balloon = function(model, body, s, _def)
 	attach(
 		model,
 		body,
@@ -199,7 +199,7 @@ ACCESSORIES.Wobble = function(model, body, s, def)
 	)
 end
 
-ACCESSORIES.Pole = function(model, body, s, def)
+ACCESSORIES.Pole = function(model, body, s, _def)
 	attach(
 		model,
 		body,
@@ -235,7 +235,7 @@ ACCESSORIES.Moon = function(model, body, s, def)
 	)
 end
 
-ACCESSORIES.Comet = function(model, body, s, def)
+ACCESSORIES.Comet = function(model, body, s, _def)
 	for i = 1, 3 do
 		attach(
 			model,
@@ -253,7 +253,7 @@ ACCESSORIES.Comet = function(model, body, s, def)
 	end
 end
 
-ACCESSORIES.Star = function(model, body, s, def)
+ACCESSORIES.Star = function(model, body, s, _def)
 	for i = 0, 2 do
 		attach(
 			model,
@@ -269,7 +269,7 @@ ACCESSORIES.Star = function(model, body, s, def)
 	end
 end
 
-ACCESSORIES.Crystal = function(model, body, s, def)
+ACCESSORIES.Crystal = function(model, body, s, _def)
 	body.Material = Enum.Material.Glass
 	body.Transparency = 0.15
 	attach(
@@ -285,7 +285,7 @@ ACCESSORIES.Crystal = function(model, body, s, def)
 	)
 end
 
-ACCESSORIES.Prism = function(model, body, s, def)
+ACCESSORIES.Prism = function(model, body, s, _def)
 	local colors = {
 		Color3.fromRGB(255, 90, 90),
 		Color3.fromRGB(255, 220, 80),
@@ -303,7 +303,7 @@ ACCESSORIES.Prism = function(model, body, s, def)
 	end
 end
 
-ACCESSORIES.Aurora = function(model, body, s, def)
+ACCESSORIES.Aurora = function(model, body, s, _def)
 	attach(
 		model,
 		body,
@@ -319,7 +319,7 @@ ACCESSORIES.Aurora = function(model, body, s, def)
 	)
 end
 
-ACCESSORIES.Crown = function(model, body, s, def)
+ACCESSORIES.Crown = function(model, body, s, _def)
 	attach(
 		model,
 		body,
@@ -495,7 +495,7 @@ function BooModel.addLabel(model: Model, extraText: string?)
 
 	local name = Instance.new("TextLabel")
 	name.BackgroundTransparency = 1
-	name.Size = UDim2.new(1, 0, 0.5, 0)
+	name.Size = UDim2.fromScale(1, 0.5)
 	name.Font = Enum.Font.FredokaOne
 	name.TextScaled = true
 	name.TextColor3 = Color3.new(1, 1, 1)
@@ -505,8 +505,8 @@ function BooModel.addLabel(model: Model, extraText: string?)
 
 	local info = Instance.new("TextLabel")
 	info.BackgroundTransparency = 1
-	info.Position = UDim2.new(0, 0, 0.5, 0)
-	info.Size = UDim2.new(1, 0, 0.5, 0)
+	info.Position = UDim2.fromScale(0, 0.5)
+	info.Size = UDim2.fromScale(1, 0.5)
 	info.Font = Enum.Font.FredokaOne
 	info.TextScaled = true
 	info.TextColor3 = Rarity.color(def.rarity)

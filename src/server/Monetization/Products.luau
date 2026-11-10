@@ -48,7 +48,7 @@ end
 -- Por produto: retorna true se entregou
 local GRANTS = {}
 
-GRANTS.ServerLuck = function(player, data, def)
+GRANTS.ServerLuck = function(player, _data, def)
 	table.insert(
 		luckEntries,
 		{ mult = def.mult, endsAt = Workspace:GetServerTimeNow() + def.duration, buyer = player.DisplayName }
@@ -62,17 +62,17 @@ GRANTS.ServerLuck = function(player, data, def)
 	return true
 end
 
-GRANTS.PersonalCash2x = function(player, data, def)
+GRANTS.PersonalCash2x = function(_player, data, def)
 	data.Cash2xEnds = math.max(os.time(), data.Cash2xEnds or 0) + def.duration
 	return true
 end
 
-GRANTS.LuckyCaptures = function(player, data, def)
+GRANTS.LuckyCaptures = function(_player, data, def)
 	data.LuckyCaptures += def.amount
 	return true
 end
 
-GRANTS.Consumable = function(player, data, def)
+GRANTS.Consumable = function(_player, data, def)
 	if data.Consumables[def.item] == nil then
 		return false
 	end
@@ -80,7 +80,7 @@ GRANTS.Consumable = function(player, data, def)
 	return true
 end
 
-GRANTS.Cash = function(player, data, def)
+GRANTS.Cash = function(_player, data, def)
 	data.Cash += def.amount
 	data.TotalCash += def.amount
 	return true
