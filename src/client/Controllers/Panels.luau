@@ -447,7 +447,7 @@ local function renderBase(data)
 	)
 	if nextFloor then
 		upgradeLabel.Text = string.format("Construir %s — $%s", nextFloor.name, Format.compact(nextFloor.cost))
-		UI.setDisabled(upgradeButton, data.Cash < nextFloor.cost, T.Cyan)
+		UI.setDisabled(upgradeButton, data.Cash + (data.Vault or 0) < nextFloor.cost, T.Cyan) -- na base, o cofre é coletado na hora
 	else
 		upgradeLabel.Text = "Base no máximo!"
 		UI.setDisabled(upgradeButton, true)

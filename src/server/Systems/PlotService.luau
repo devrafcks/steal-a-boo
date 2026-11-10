@@ -35,6 +35,7 @@ local P = Config.Plot
 local M = Config.Materials
 
 local updateGateVisual -- definido mais abaixo
+local collect -- definido mais abaixo
 
 local function newGateState()
 	return { lockedUntil = 0, nextLockAt = 0, alarmUntil = 0, lastAlarm = 0, lastEject = {} }
@@ -212,8 +213,8 @@ local function liftPad(parent: Instance, cf: CFrame, up: boolean, target: string
 		Shape = Enum.PartType.Cylinder,
 		Size = Vector3.new(0.4, 5, 5),
 		CFrame = cf * CFrame.Angles(0, 0, math.rad(90)),
-		Color = up and Color3.fromRGB(90, 220, 255) or Color3.fromRGB(255, 170, 90),
-		Material = Enum.Material.Neon,
+		Color = up and Color3.fromRGB(120, 200, 235) or Color3.fromRGB(240, 170, 110),
+		Material = Enum.Material.SmoothPlastic,
 	}, parent)
 	pad:SetAttribute("Target", target)
 	mk("ProximityPrompt", {
@@ -406,6 +407,11 @@ function PlotService.upgrade(player: Player)
 		ctx.notify(player, "Sua base já está no máximo!", "info")
 		return
 	end
+	-- Dentro da própria base, o cofre é coletado antes de cobrar (o dinheiro dos Boos já conta)
+	local pos = ctx.Net.position(player)
+	if pos and PlotService.isInside(plotOf[player], pos) then
+		collect(player, plotOf[player])
+	end
 	if data.Cash < nextFloor.cost then
 		ctx.notify(
 			player,
@@ -464,7 +470,7 @@ function PlotService.renderSlots(player: Player)
 		local unlocked = PlotService.isUnlocked(player, i)
 		local key = unlocked and data.PlotLayout[tostring(i)] or nil
 		if pad then
-			pad.Color = unlocked and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(90, 85, 110)
+			pad.Color = unlocked and Color3.fromRGB(235, 225, 240) or Color3.fromRGB(90, 85, 110)
 			pad.Material = unlocked and Enum.Material.SmoothPlastic or Enum.Material.Slate
 			pad:SetAttribute("Unlocked", unlocked)
 			pad:SetAttribute("Occupied", key ~= nil)
@@ -686,7 +692,7 @@ function updateGateVisual(plot: Model, locked: boolean)
 	end
 end
 
-local function collect(player: Player, plot: Model)
+function collect(player: Player, plot: Model)
 	local data = ctx.PlayerData.data(player)
 	if not data or (data.Vault or 0) < 1 then
 		return
