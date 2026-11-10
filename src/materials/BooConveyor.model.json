@@ -1,0 +1,12 @@
+{
+  "className": "MaterialVariant",
+  "properties": {
+    "BaseMaterial": "Rubber",
+    "MaterialPattern": "Regular",
+    "StudsPerTile": 10,
+    "ColorMap": "rbxassetid://114561853488161",
+    "NormalMap": "rbxassetid://120773771922199",
+    "MetalnessMap": "rbxassetid://131860847294669",
+    "RoughnessMap": "rbxassetid://92440669175346"
+  }
+}
