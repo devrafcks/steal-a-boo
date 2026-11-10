@@ -12,13 +12,13 @@ local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Config = require(Shared.Config)
 local Rarity = require(Shared.Util.Rarity)
+local Format = require(Shared.Util.Format)
 local Remotes = require(Shared.Remotes)
 
 local UI = require(script.Parent.UIController)
@@ -30,40 +30,9 @@ local T = UI.Theme
 
 local Effects = {}
 
-----------------------------------------------------------------------
--- Som
-----------------------------------------------------------------------
-local soundCache: { [string]: Sound } = {}
-function Effects.play(key: string, volumeMul: number?)
-	local id = Config.Sounds[key]
-	if not id or id == 0 then
-		return
-	end
-	local s = soundCache[key]
-	if not s then
-		s = Instance.new("Sound")
-		s.SoundId = "rbxassetid://" .. tostring(id)
-		s.Parent = SoundService
-		soundCache[key] = s
-	end
-	s.Volume = Config.Sounds.Volume * (volumeMul or 1)
-	s:Play()
-end
-
-local music: Sound? = nil
-if Config.Sounds.Music ~= 0 then
-	music = Instance.new("Sound")
-	music.SoundId = "rbxassetid://" .. tostring(Config.Sounds.Music)
-	music.Looped = true
-	music.Volume = 0.15
-	music.Parent = SoundService
-	music:Play()
-end
-State.onReady(function(data)
-	if music then
-		music.Volume = 0.3 * data.Settings.MusicVolume
-	end
-end)
+-- Som: módulo Sound (IDs licenciados em Config.Sounds)
+local Sound = require(script.Parent.Sound)
+Effects.play = Sound.play
 
 ----------------------------------------------------------------------
 -- Balanço dos Boos e giros (local)
@@ -437,6 +406,7 @@ HANDLERS.Recovered = function(p)
 end
 
 HANDLERS.Poof = function(p)
+	Effects.play("Poof", 0.8)
 	if p.position then
 		burst(p.position, Color3.fromRGB(200, 200, 210), 50, 1.4)
 		worldText(p.position + Vector3.new(0, 2, 0), "POOF! Era isca", T.Muted)
@@ -448,7 +418,7 @@ HANDLERS.Slap = function(p)
 		burst(p.position, T.Orange, 20)
 		worldText(p.position + Vector3.new(0, 3, 0), "PAF!", T.Orange)
 	end
-	Effects.play("Whoosh", 0.6)
+	Effects.play("Slap", 0.8)
 end
 
 HANDLERS.Knockback = function(p)
@@ -466,6 +436,7 @@ HANDLERS.Knockback = function(p)
 end
 
 HANDLERS.Freeze = function(p)
+	Effects.play("Freeze", 0.6)
 	local pos = headPos(p.to)
 	if pos then
 		worldText(pos + Vector3.new(0, 2, 0), "CONGELADO!", T.Cyan, p.duration)
@@ -490,7 +461,7 @@ end
 HANDLERS.Power = function(p)
 	if p.userId == player.UserId then
 		HUD.startCooldown(p.key, p.cooldown or 5)
-		Effects.play("Whoosh", 0.6)
+		Effects.play(p.key == "SuperJump" and "Spring" or "Whoosh", 0.6)
 	end
 	local pos = headPos(p.userId)
 	if pos and (p.key == "SpeedRush" or p.key == "SuperJump") then
@@ -546,6 +517,9 @@ HANDLERS.Coin = function(p)
 end
 
 HANDLERS.Purchase = function(p)
+	if p.userId == player.UserId then
+		Effects.play("Purchase")
+	end
 	local pos = headPos(p.userId)
 	if pos then
 		for _, c in ipairs({ T.Pink, T.Yellow, T.Cyan }) do
@@ -566,6 +540,254 @@ HANDLERS.Tutorial = function()
 		end)
 	end
 end
+
+HANDLERS.Collect = function(p)
+	local pos = headPos(p.userId)
+	if pos then
+		worldText(pos + Vector3.new(0, 2, 0), "+$" .. Format.compact(p.amount), T.Yellow, 1.4)
+		burst(pos, T.Yellow, 20, 0.5)
+	end
+	if p.userId == player.UserId then
+		Effects.play("Coin", 0.7)
+	end
+end
+
+HANDLERS.BaseUpgrade = function(p)
+	local plots = Workspace.StealABooWorld.Plots
+	local plot = plots:FindFirstChild("Plot_" .. tostring(p.plotIndex))
+	local floor = plot and plot:FindFirstChild("Floor")
+	if floor then
+		for k = 1, 4 do
+			burst(
+				floor.Position + Vector3.new(0, p.level * Config.Plot.FloorHeight, 0),
+				({ T.Pink, T.Yellow, T.Cyan, T.Green })[k],
+				30,
+				0.9
+			)
+		end
+	end
+	if p.userId == player.UserId then
+		local f = Config.Plot.Floors[p.level]
+		bigPopup("BASE MAIOR!", (f and f.name or "") .. " pronto", T.Cyan)
+		Effects.play("RareSting")
+	end
+end
+
+HANDLERS.Lift = function(p)
+	if p.userId == player.UserId then
+		Effects.play("Spring", 0.6)
+	end
+end
+
+----------------------------------------------------------------------
+-- Esteiras animadas (listras correndo) e moedas indo para o cofre
+----------------------------------------------------------------------
+local conveyors = {}
+local fxFolder = Instance.new("Folder")
+fxFolder.Name = "LocalFX"
+fxFolder.Parent = Workspace
+
+local function setupConveyor(part: BasePart)
+	local axis = part.Size.X >= part.Size.Z and "X" or "Z"
+	local length = axis == "X" and part.Size.X or part.Size.Z
+	local width = axis == "X" and part.Size.Z or part.Size.X
+	local stripes = {}
+	for _ = 1, math.max(3, math.floor(length / 3)) do
+		local s = Instance.new("Part")
+		s.Anchored = true
+		s.CanCollide = false
+		s.CanQuery = false
+		s.CanTouch = false
+		s.CastShadow = false
+		s.Material = Enum.Material.Neon
+		s.Color = Color3.fromRGB(255, 255, 255)
+		s.Transparency = 0.45
+		s.Size = axis == "X" and Vector3.new(0.35, 0.06, width * 0.8) or Vector3.new(width * 0.8, 0.06, 0.35)
+		s.Parent = fxFolder
+		table.insert(stripes, s)
+	end
+	table.insert(conveyors, { part = part, stripes = stripes, axis = axis, length = length })
+end
+
+local function plotOfPart(part: Instance): Instance?
+	local node = part.Parent
+	while node and node ~= Workspace do
+		if node.Name:match("^Plot_") then
+			return node
+		end
+		node = node.Parent
+	end
+	return nil
+end
+
+task.spawn(function()
+	local world = Workspace:WaitForChild("StealABooWorld", 30)
+	if not world then
+		return
+	end
+	task.wait(1.5)
+	for _, d in world:GetDescendants() do
+		if d:IsA("BasePart") and d:GetAttribute("Conveyor") then
+			setupConveyor(d)
+		end
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	local t = os.clock()
+	local cam = Workspace.CurrentCamera
+	local camPos = cam and cam.CFrame.Position or Vector3.zero
+	for _, c in ipairs(conveyors) do
+		local part = c.part
+		if part.Parent and (part.Position - camPos).Magnitude < 160 then
+			local speed = 4
+			local mult = part:GetAttribute("BoostMult")
+			if mult then
+				local plot = plotOfPart(part)
+				local active = plot ~= nil and plot:GetAttribute("BoostMult") == mult
+				speed = active and 14 or 2
+				for _, s in ipairs(c.stripes) do
+					s.Color = active and Color3.fromRGB(255, 255, 120) or Color3.fromRGB(255, 255, 255)
+				end
+			end
+			local n = #c.stripes
+			for i, s in ipairs(c.stripes) do
+				local offset = ((t * speed + (i - 1) * c.length / n) % c.length) - c.length / 2
+				local rel = c.axis == "X" and CFrame.new(offset, part.Size.Y / 2 + 0.04, 0)
+					or CFrame.new(0, part.Size.Y / 2 + 0.04, -offset)
+				s.CFrame = part.CFrame * rel
+			end
+		else
+			for _, s in ipairs(c.stripes) do
+				s.CFrame = CFrame.new(0, -500, 0)
+			end
+		end
+	end
+end)
+
+-- Moedinhas correndo pela esteira de coleta das bases que têm renda
+task.spawn(function()
+	local world = Workspace:WaitForChild("StealABooWorld", 30)
+	if not world then
+		return
+	end
+	local plots = world:WaitForChild("Plots")
+	while true do
+		task.wait(0.7)
+		local cam = Workspace.CurrentCamera
+		for _, plot in plots:GetChildren() do
+			local belt = plot:FindFirstChild("CollectorBelt")
+			if
+				belt
+				and (plot:GetAttribute("IncomePerSec") or 0) > 0
+				and cam
+				and (belt.Position - cam.CFrame.Position).Magnitude < 140
+			then
+				local coin = Instance.new("Part")
+				coin.Shape = Enum.PartType.Cylinder
+				coin.Size = Vector3.new(0.25, 1.2, 1.2)
+				coin.Color = Color3.fromRGB(255, 210, 60)
+				coin.Material = Enum.Material.Neon
+				coin.Anchored = true
+				coin.CanCollide = false
+				coin.CanQuery = false
+				coin.CastShadow = false
+				local up = belt.Size.Y / 2 + 0.7
+				local start = belt.CFrame
+					* CFrame.new(-belt.Size.X / 2 + 0.6, up, 0)
+					* CFrame.Angles(0, math.rad(90), 0)
+				local finish = belt.CFrame * CFrame.new(belt.Size.X / 2 + 3, up, 0) * CFrame.Angles(0, math.rad(90), 0)
+				coin.CFrame = start
+				coin.Parent = fxFolder
+				TweenService:Create(coin, TweenInfo.new(2.4, Enum.EasingStyle.Linear), { CFrame = finish }):Play()
+				Debris:AddItem(coin, 2.5)
+			end
+		end
+	end
+end)
+
+----------------------------------------------------------------------
+-- Fogos de artifício no céu da feira
+----------------------------------------------------------------------
+local FIREWORK_COLORS = { T.Pink, T.Yellow, T.Cyan, T.Green, Color3.fromRGB(200, 140, 255) }
+
+local function firework(origin: Vector3)
+	local rocket = Instance.new("Part")
+	rocket.Shape = Enum.PartType.Ball
+	rocket.Size = Vector3.one * 0.8
+	rocket.Material = Enum.Material.Neon
+	rocket.Color = Color3.fromRGB(255, 240, 200)
+	rocket.Anchored = true
+	rocket.CanCollide = false
+	rocket.CanQuery = false
+	rocket.CFrame = CFrame.new(origin)
+	rocket.Parent = fxFolder
+	local trail = Instance.new("ParticleEmitter")
+	trail.Color = ColorSequence.new(Color3.fromRGB(255, 220, 160))
+	trail.LightEmission = 1
+	trail.Size = NumberSequence.new(0.5, 0)
+	trail.Lifetime = NumberRange.new(0.3, 0.5)
+	trail.Rate = 40
+	trail.Speed = NumberRange.new(1, 2)
+	trail.Parent = rocket
+	local top = origin + Vector3.new(math.random(-10, 10), math.random(70, 110), math.random(-10, 10))
+	local tw = TweenService:Create(
+		rocket,
+		TweenInfo.new(1.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ CFrame = CFrame.new(top) }
+	)
+	tw:Play()
+	tw.Completed:Wait()
+	rocket:Destroy()
+
+	local p = Instance.new("Part")
+	p.Anchored = true
+	p.CanCollide = false
+	p.CanQuery = false
+	p.Transparency = 1
+	p.CFrame = CFrame.new(top)
+	p.Parent = fxFolder
+	local color = FIREWORK_COLORS[math.random(1, #FIREWORK_COLORS)]
+	local e = Instance.new("ParticleEmitter")
+	e.Color = ColorSequence.new(color, Color3.new(1, 1, 1))
+	e.LightEmission = 1
+	e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1.4), NumberSequenceKeypoint.new(1, 0) })
+	e.Lifetime = NumberRange.new(1.2, 1.8)
+	e.Speed = NumberRange.new(28, 40)
+	e.Drag = 2.5
+	e.Acceleration = Vector3.new(0, -8, 0)
+	e.SpreadAngle = Vector2.new(180, 180)
+	e.Rate = 0
+	e.Parent = p
+	e:Emit(90)
+	local flash = Instance.new("PointLight")
+	flash.Color = color
+	flash.Range = 60
+	flash.Brightness = 3
+	flash.Parent = p
+	TweenService:Create(flash, TweenInfo.new(1), { Brightness = 0 }):Play()
+	Debris:AddItem(p, 3)
+end
+
+task.spawn(function()
+	local spots = {
+		Vector3.new(0, 20, -60),
+		Vector3.new(0, 20, 60),
+		Vector3.new(170, 20, 40),
+		Vector3.new(-150, 20, -40),
+		Vector3.new(95, 20, -50),
+	}
+	while true do
+		task.wait(math.random(6, 12))
+		local data = State.data
+		if not (data and data.Settings and data.Settings.ReduceScares) then
+			for _ = 1, math.random(1, 3) do
+				task.spawn(firework, spots[math.random(1, #spots)])
+				task.wait(0.35)
+			end
+		end
+	end
+end)
 
 function Effects.init()
 	Remotes.get("ReplicateEffect").OnClientEvent:Connect(function(name, payload)

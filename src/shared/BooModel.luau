@@ -487,10 +487,10 @@ function BooModel.addLabel(model: Model, extraText: string?)
 	end
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "BooLabel"
-	gui.Size = UDim2.fromOffset(160, 54)
+	gui.Size = UDim2.fromOffset(130, 42)
 	gui.StudsOffsetWorldSpace = Vector3.new(0, 3.2, 0)
 	gui.AlwaysOnTop = false
-	gui.MaxDistance = 70
+	gui.MaxDistance = 45
 	gui.LightInfluence = 0
 
 	local name = Instance.new("TextLabel")
