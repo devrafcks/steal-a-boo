@@ -32,39 +32,30 @@ end)
 
 local tabBar =
 	UI.make("Frame", { Name = "Tabs", BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 48), Parent = body })
-UI.make(
-	"UIListLayout",
-	{
-		FillDirection = Enum.FillDirection.Horizontal,
-		Padding = UDim.new(0, 8),
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		Parent = tabBar,
-	}
-)
+UI.make("UIListLayout", {
+	FillDirection = Enum.FillDirection.Horizontal,
+	Padding = UDim.new(0, 8),
+	SortOrder = Enum.SortOrder.LayoutOrder,
+	Parent = tabBar,
+})
 
-local grid = UI.make(
-	"ScrollingFrame",
-	{
-		Name = "Grid",
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Position = UDim2.fromOffset(0, 58),
-		Size = UDim2.new(1, 0, 1, -58),
-		CanvasSize = UDim2.new(),
-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
-		ScrollBarThickness = 8,
-		Parent = body,
-	}
-)
-UI.make(
-	"UIGridLayout",
-	{
-		CellSize = UDim2.fromOffset(186, 200),
-		CellPadding = UDim2.fromOffset(10, 10),
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		Parent = grid,
-	}
-)
+local grid = UI.make("ScrollingFrame", {
+	Name = "Grid",
+	BackgroundTransparency = 1,
+	BorderSizePixel = 0,
+	Position = UDim2.fromOffset(0, 58),
+	Size = UDim2.new(1, 0, 1, -58),
+	CanvasSize = UDim2.new(),
+	AutomaticCanvasSize = Enum.AutomaticSize.Y,
+	ScrollBarThickness = 8,
+	Parent = body,
+})
+UI.make("UIGridLayout", {
+	CellSize = UDim2.fromOffset(186, 200),
+	CellPadding = UDim2.fromOffset(10, 10),
+	SortOrder = Enum.SortOrder.LayoutOrder,
+	Parent = grid,
+})
 
 local tabButtons = {}
 local TAB_COLORS = { Boosts = T.Green, Poderes = T.Cyan, Sustos = T.Pink, Cash = T.Yellow, Passes = T.Orange }
@@ -110,18 +101,15 @@ local function renderTab()
 			card,
 			{ Text = d.name, Size = UDim2.new(1, -12, 0, 24), Position = UDim2.fromOffset(6, 60), MaxTextSize = 20 }
 		)
-		UI.text(
-			card,
-			{
-				Text = d.desc or "",
-				Size = UDim2.new(1, -12, 0, 40),
-				Position = UDim2.fromOffset(6, 86),
-				Color = T.Muted,
-				MaxTextSize = 15,
-				Font = T.FontBold,
-				Stroke = false,
-			}
-		)
+		UI.text(card, {
+			Text = d.desc or "",
+			Size = UDim2.new(1, -12, 0, 40),
+			Position = UDim2.fromOffset(6, 86),
+			Color = T.Muted,
+			MaxTextSize = 15,
+			Font = T.FontBold,
+			Stroke = false,
+		})
 
 		local buttonText, color, disabled = string.format("R$ %d", d.price), T.Green, false
 		if item.kind == "Pass" and d.owned then

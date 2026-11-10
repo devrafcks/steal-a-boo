@@ -26,29 +26,23 @@ local invInfo = UI.text(
 	invBody,
 	{ Text = "", Size = UDim2.new(1, 0, 0, 24), Color = T.Muted, XAlign = Enum.TextXAlignment.Left, MaxTextSize = 20 }
 )
-local invList = UI.make(
-	"ScrollingFrame",
-	{
-		Name = "List",
-		BackgroundTransparency = 1,
-		Position = UDim2.fromOffset(0, 30),
-		Size = UDim2.new(1, 0, 1, -30),
-		CanvasSize = UDim2.new(),
-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
-		ScrollBarThickness = 8,
-		BorderSizePixel = 0,
-		Parent = invBody,
-	}
-)
-UI.make(
-	"UIGridLayout",
-	{
-		CellSize = UDim2.fromOffset(190, 120),
-		CellPadding = UDim2.fromOffset(10, 10),
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		Parent = invList,
-	}
-)
+local invList = UI.make("ScrollingFrame", {
+	Name = "List",
+	BackgroundTransparency = 1,
+	Position = UDim2.fromOffset(0, 30),
+	Size = UDim2.new(1, 0, 1, -30),
+	CanvasSize = UDim2.new(),
+	AutomaticCanvasSize = Enum.AutomaticSize.Y,
+	ScrollBarThickness = 8,
+	BorderSizePixel = 0,
+	Parent = invBody,
+})
+UI.make("UIGridLayout", {
+	CellSize = UDim2.fromOffset(190, 120),
+	CellPadding = UDim2.fromOffset(10, 10),
+	SortOrder = Enum.SortOrder.LayoutOrder,
+	Parent = invList,
+})
 
 local lastInvSignature = ""
 local function renderInventory(data)
@@ -104,25 +98,19 @@ local function renderInventory(data)
 			UI.make("Frame", { Name = key, BackgroundColor3 = T.PanelLight, LayoutOrder = i, Parent = invList })
 		UI.corner(card, 12)
 		UI.make("UIStroke", { Thickness = 3, Color = Rarity.color(def.rarity), Parent = card })
-		UI.text(
-			card,
-			{
-				Text = string.format("%s  x%d", def.name, data.Inventory[key]),
-				Size = UDim2.new(1, -12, 0, 26),
-				Position = UDim2.fromOffset(6, 4),
-				MaxTextSize = 22,
-			}
-		)
-		UI.text(
-			card,
-			{
-				Text = string.format("%s • $%d/s", Rarity.label(def.rarity), def.incomePerSec),
-				Size = UDim2.new(1, -12, 0, 20),
-				Position = UDim2.fromOffset(6, 32),
-				Color = Rarity.color(def.rarity),
-				MaxTextSize = 18,
-			}
-		)
+		UI.text(card, {
+			Text = string.format("%s  x%d", def.name, data.Inventory[key]),
+			Size = UDim2.new(1, -12, 0, 26),
+			Position = UDim2.fromOffset(6, 4),
+			MaxTextSize = 22,
+		})
+		UI.text(card, {
+			Text = string.format("%s • $%d/s", Rarity.label(def.rarity), def.incomePerSec),
+			Size = UDim2.new(1, -12, 0, 20),
+			Position = UDim2.fromOffset(6, 32),
+			Color = Rarity.color(def.rarity),
+			MaxTextSize = 18,
+		})
 		UI.button(card, {
 			Text = "Colocar",
 			Color = T.Green,
@@ -200,15 +188,12 @@ end
 ----------------------------------------------------------------------
 local _, dailyBody = UI.panel("Daily", "Recompensa Diária", UDim2.fromOffset(640, 300))
 local dayRow = UI.make("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 120), Parent = dailyBody })
-UI.make(
-	"UIListLayout",
-	{
-		FillDirection = Enum.FillDirection.Horizontal,
-		Padding = UDim.new(0, 8),
-		HorizontalAlignment = Enum.HorizontalAlignment.Center,
-		Parent = dayRow,
-	}
-)
+UI.make("UIListLayout", {
+	FillDirection = Enum.FillDirection.Horizontal,
+	Padding = UDim.new(0, 8),
+	HorizontalAlignment = Enum.HorizontalAlignment.Center,
+	Parent = dayRow,
+})
 local dayCards = {}
 for i = 1, Config.Daily.StreakMax do
 	local c = UI.make(
@@ -221,16 +206,13 @@ for i = 1, Config.Daily.StreakMax do
 		c,
 		{ Text = "Dia " .. i, Size = UDim2.new(1, -6, 0, 26), Position = UDim2.fromOffset(3, 4), MaxTextSize = 20 }
 	)
-	UI.text(
-		c,
-		{
-			Text = "$" .. Format.compact(Config.Daily.Rewards[i]) .. (i == Config.Daily.StreakMax and "\n+Sorte" or ""),
-			Size = UDim2.new(1, -6, 0, 60),
-			Position = UDim2.fromOffset(3, 40),
-			Color = T.Yellow,
-			MaxTextSize = 20,
-		}
-	)
+	UI.text(c, {
+		Text = "$" .. Format.compact(Config.Daily.Rewards[i]) .. (i == Config.Daily.StreakMax and "\n+Sorte" or ""),
+		Size = UDim2.new(1, -6, 0, 60),
+		Position = UDim2.fromOffset(3, 40),
+		Color = T.Yellow,
+		MaxTextSize = 20,
+	})
 	dayCards[i] = c
 end
 local dailyStatus = UI.text(
@@ -270,31 +252,25 @@ end
 local _, lbBody = UI.panel("Leaderboard", "Ranking Global", UDim2.fromOffset(640, 440), function()
 	Panels.renderLeaderboard()
 end)
-local lbCash = UI.text(
-	lbBody,
-	{
-		Text = "",
-		Size = UDim2.new(0.5, -8, 1, 0),
-		XAlign = Enum.TextXAlignment.Left,
-		YAlign = Enum.TextYAlignment.Top,
-		TextScaled = false,
-		TextSize = 20,
-		Font = T.FontBold,
-	}
-)
-local lbReb = UI.text(
-	lbBody,
-	{
-		Text = "",
-		Size = UDim2.new(0.5, -8, 1, 0),
-		Position = UDim2.new(0.5, 8, 0, 0),
-		XAlign = Enum.TextXAlignment.Left,
-		YAlign = Enum.TextYAlignment.Top,
-		TextScaled = false,
-		TextSize = 20,
-		Font = T.FontBold,
-	}
-)
+local lbCash = UI.text(lbBody, {
+	Text = "",
+	Size = UDim2.new(0.5, -8, 1, 0),
+	XAlign = Enum.TextXAlignment.Left,
+	YAlign = Enum.TextYAlignment.Top,
+	TextScaled = false,
+	TextSize = 20,
+	Font = T.FontBold,
+})
+local lbReb = UI.text(lbBody, {
+	Text = "",
+	Size = UDim2.new(0.5, -8, 1, 0),
+	Position = UDim2.new(0.5, 8, 0, 0),
+	XAlign = Enum.TextXAlignment.Left,
+	YAlign = Enum.TextYAlignment.Top,
+	TextScaled = false,
+	TextSize = 20,
+	Font = T.FontBold,
+})
 
 function Panels.renderLeaderboard()
 	local value = ReplicatedStorage:FindFirstChild("LeaderboardData")
@@ -335,16 +311,13 @@ local reduceButton, reduceLabel = UI.button(setBody, {
 		end
 	end,
 })
-UI.text(
-	setBody,
-	{
-		Text = "Com isso ligado, sustos viram só um ícone pequeno, sem tela cheia nem tremida.",
-		Size = UDim2.new(1, 0, 0, 40),
-		Position = UDim2.fromOffset(0, 60),
-		Color = T.Muted,
-		MaxTextSize = 18,
-	}
-)
+UI.text(setBody, {
+	Text = "Com isso ligado, sustos viram só um ícone pequeno, sem tela cheia nem tremida.",
+	Size = UDim2.new(1, 0, 0, 40),
+	Position = UDim2.fromOffset(0, 60),
+	Color = T.Muted,
+	MaxTextSize = 18,
+})
 local volLabel = UI.text(
 	setBody,
 	{ Text = "Música: 50%", Size = UDim2.new(0.5, 0, 0, 50), Position = UDim2.fromOffset(0, 120), MaxTextSize = 22 }

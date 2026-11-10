@@ -27,32 +27,26 @@ end
 function ShopService.catalog(player: Player)
 	local passes, products = {}, {}
 	for key, def in pairs(Config.GamePasses) do
-		table.insert(
-			passes,
-			{
-				key = key,
-				id = def.id,
-				name = def.name,
-				price = def.price,
-				icon = def.icon,
-				desc = def.desc,
-				owned = ctx.Passes.owns(player, key),
-			}
-		)
+		table.insert(passes, {
+			key = key,
+			id = def.id,
+			name = def.name,
+			price = def.price,
+			icon = def.icon,
+			desc = def.desc,
+			owned = ctx.Passes.owns(player, key),
+		})
 	end
 	for key, def in pairs(Config.Products) do
-		table.insert(
-			products,
-			{
-				key = key,
-				id = def.id,
-				name = def.name,
-				price = def.price,
-				icon = def.icon,
-				desc = def.desc,
-				tab = def.tab,
-			}
-		)
+		table.insert(products, {
+			key = key,
+			id = def.id,
+			name = def.name,
+			price = def.price,
+			icon = def.icon,
+			desc = def.desc,
+			tab = def.tab,
+		})
 	end
 	table.sort(passes, function(a, b)
 		return a.price < b.price
