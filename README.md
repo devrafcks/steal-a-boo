@@ -16,11 +16,16 @@
   gere Cash por segundo, roube dos amigos e defenda o que é seu.
 </p>
 
+<p align="center">
+  <img src="assets/screenshots/overview.png" alt="Visão geral do parque" width="860">
+</p>
+
 ---
 
 ## Sumário
 
 - [Sobre o jogo](#sobre-o-jogo)
+- [Galeria](#galeria)
 - [Loop principal](#loop-principal)
 - [Funcionalidades](#funcionalidades)
 - [Stack e arquitetura](#stack-e-arquitetura)
@@ -46,20 +51,34 @@ Você chega num parque colorido. No centro fica a praça neutra com loja, estaç
 baú diário, carrossel e rankings. Em volta, oito bases iguais. A leste e a oeste, quatro zonas
 de captura que pedem cada vez mais Speed ou Throw Power.
 
+## Galeria
+
+| Praça central | Base com andares |
+| --- | --- |
+| <img src="assets/screenshots/plaza.png" alt="Praça" width="420"> | <img src="assets/screenshots/base.png" alt="Base" width="420"> |
+| **Feirinha (zona de captura)** | **Tenda Secreta** |
+| <img src="assets/screenshots/zone.png" alt="Zona" width="420"> | <img src="assets/screenshots/tent.png" alt="Tenda" width="420"> |
+
 ## Loop principal
 
 1. **Treine** Speed (esteira) e Throw Power (alvo) na praça pagando Cash.
 2. **Capture** Boos nas zonas. Zonas mais longe exigem mais status e têm Boos mais raros.
-3. **Coloque** os Boos nos slots da sua base. Cada um gera Cash por segundo.
-4. **Roube** Boos de bases com o portão aberto e corra de volta para a sua.
-5. **Defenda** trancando o portão, usando alarme, isca, slap, freeze e sustos cômicos.
-6. **Rebirth** para multiplicar a renda para sempre.
-7. **Volte todo dia** para o Daily e suba no ranking global.
+3. **Coloque** os Boos nos slots da sua base. Cada um gera Cash por segundo, que cai no cofre.
+4. **Colete** pisando no pad dourado da esteira de coleta e **construa andares** (até o 4º).
+5. **Roube** Boos de bases com o portão aberto e corra de volta para a sua.
+6. **Defenda** trancando o portão, usando alarme, isca, slap, freeze e sustos cômicos.
+7. **Rebirth** para multiplicar a renda para sempre.
+8. **Volte todo dia** para o Daily e suba no ranking global.
 
 ## Funcionalidades
 
 - 16 Boos originais em 7 raridades (Comum a Secreto), feitos só com primitivas
-- Mapa gerado por código: praça, 8 bases com 16 slots e mezanino, 4 zonas temáticas
+- Mapa gerado por código: terreno de grama com lago, morros e mata, praça, 8 bases e 4 zonas temáticas
+- Bases com até 4 andares (36 slots), elevadores, cofre e esteira de coleta
+- Esteiras pagas 2x, 3x e 4x de renda por 2 minutos
+- Céu noturno com lua, estrelas, nuvens rosadas e fogos de artifício
+- Texturas originais geradas no Studio e modelos 3D gratuitos do Creator Store
+- Efeitos sonoros e música licenciados (ProSoundEffects, APM e Roblox)
 - Save com ProfileStore (session lock, Reconcile, BindToClose, mock no Studio)
 - Roubo com carga visível, penalidade de velocidade, queda do Boo e retorno ao dono
 - Proteção de novatos e regra do último Boo
@@ -67,7 +86,7 @@ de captura que pedem cada vez mais Speed ou Throw Power.
   Susto Festa, Boo Isca e Alarme da Base
 - Opção "Reduzir sustos" para quem não curte o overlay
 - Rebirth, Daily com sequência de 7 dias, ranking global com OrderedDataStore
-- Loja com abas, 18 dev products e 4 gamepasses, todos lidos do `Config.luau`
+- Loja com abas, 21 dev products e 4 gamepasses, todos lidos do `Config.luau`
 - `ProcessReceipt` único e idempotente por `PurchaseId`
 - Server Luck compartilhado com banner para todo o servidor
 - Rate limit em todos os remotes e validação de distância, dono, cooldown e estado
@@ -156,6 +175,8 @@ stylua src
 - **Loja sem cobrar:** com IDs em `0`, cada item mostra *Configure o ID no Config* e um botão
   *Testar grátis (Studio)*. Ele usa o remote `StudioGrant`, que só é criado quando
   `RunService:IsStudio()` é verdadeiro e por isso não existe em produção.
+- **Salve o place (Ctrl+S):** os modelos do Creator Store (`ServerStorage.ExternalAssets`), os materiais e a graminha 3D do terreno (`Terrain.Decoration`) ficam guardados no arquivo do place.
+- **Rojo e materiais:** se o `MaterialService` não sincronizar, pare e rode `rojo serve` de novo e reconecte o plugin (o projeto passou a mapear `src/materials`).
 - **Dois jogadores:** Test > Clients and Servers > 2 Players para testar roubo, slap e sustos.
 
 ## Configuração única
@@ -175,13 +196,16 @@ Dashboard com **exatamente** o nome e o preço abaixo e cole o ID no campo `id` 
 | --- | --- | --- | --- |
 | `DoubleCash` | 2x Cash | 99 | Sua base gera o dobro de Cash para sempre. |
 | `DoubleTraining` | 2x Training | 149 | Treino rende o dobro de Speed e Throw Power. |
-| `ExtraSlots` | +4 Base Slots | 199 | Quatro slots extras permanentes na base. |
-| `VIP` | VIP | 249 | Tag VIP, aura, +10% Cash e +2 slots na base. |
+| `ExtraSlots` | +4 Base Slots | 199 | Quatro slots extras permanentes no térreo. |
+| `VIP` | VIP | 249 | Tag VIP, aura, +10% Cash e +2 slots no térreo. |
 
 ### Developer Products
 
 | Chave no Config | Nome | Preço (R$) | Entrega |
 | --- | --- | --- | --- |
+| `Belt2x` | Esteira 2x (2 min) | 15 | Renda dos Boos em dobro por 2 min |
+| `Belt3x` | Esteira 3x (2 min) | 25 | Renda triplicada por 2 min |
+| `Belt4x` | Esteira 4x (2 min) | 39 | Renda quadruplicada por 2 min |
 | `Luck2x15` | Server Luck 2x (15 min) | 19 | Sorte 2x para o servidor |
 | `Luck4x15` | Server Luck 4x (15 min) | 39 | Sorte 4x para o servidor |
 | `Luck8x15` | Server Luck 8x (15 min) | 79 | Sorte 8x para o servidor |
@@ -247,6 +271,10 @@ place publicado, peça explicitamente e desligue a permissão depois.
 | Portão | Começa aberto. O dono tranca por `GateLockSeconds` (40s) e depois o portão fica aberto pelo menos `GateOpenSeconds` (20s). Trancado, intrusos são expulsos e ninguém rouba. `GateCooldownSeconds` ficou só informativo (soma dos dois). |
 | Server Luck | Afeta só sorteios (spawn, captura, carrossel), não a renda. Vence o maior multiplicador ativo e cada compra mantém o próprio tempo. |
 | Sorte | Multiplica o peso das raridades Rare para cima. Comuns não mudam. |
+| Cofre | A renda vai para o cofre da base e só vira Cash quando o dono pisa no pad dourado. O Cash vitalício do ranking conta na coleta. |
+| Andares | Térreo com 12 slots (6 livres, 4 do passe ExtraSlots, 2 do VIP). 2º, 3º e 4º andar custam 2.5K, 40K e 500K e têm 8 slots cada. Rebirth não derruba os andares. |
+| Esteiras pagas | Vale o maior multiplicador ativo. Comprar de novo soma 2 minutos. |
+| Boo inicial | O jogador novo começa com um MarshBoo já colocado no slot 1. |
 | Custo do treino | Crescimento de 1.06 por treino (1.12 travava a progressão na Tenda Secreta). |
 | Invisibilidade | Não dá para começar um roubo nem ficar invisível carregando um Boo. |
 | Slap | O servidor valida e o cliente do alvo aplica o empurrão (ele é dono da física do próprio boneco). O efeito importante, soltar o Boo, é do servidor. |
