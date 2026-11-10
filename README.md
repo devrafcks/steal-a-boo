@@ -225,6 +225,39 @@ Dashboard com **exatamente** o nome e o preço abaixo e cole o ID no campo `id` 
 | `CashM` | Baú de Cash | 79 | +6.000 Cash |
 | `CashL` | Cofre de Cash | 149 | +15.000 Cash |
 
+### IDs criados na Roblox
+
+Todos os produtos e passes foram criados via Open Cloud (MCP do Studio) com ícone próprio
+(`assets/store`) e já estão no `Config.luau`.
+
+| Chave | ID |
+| --- | --- |
+| `Belt2x` | 3730282380 |
+| `Belt3x` | 3730282412 |
+| `Belt4x` | 3730282417 |
+| `Luck2x15` | 3730282423 |
+| `Luck4x15` | 3730282426 |
+| `Luck8x15` | 3730282434 |
+| `Cash2x15` | 3730282437 |
+| `LuckyThrows5` | 3730282442 |
+| `LuckyThrows10` | 3730282448 |
+| `SpeedRush3` | 3730282454 |
+| `Invis1` | 3730282460 |
+| `SuperJump3` | 3730282467 |
+| `Slap3` | 3730282471 |
+| `Freeze1` | 3730282478 |
+| `ScareClassic3` | 3730282482 |
+| `ScareParty1` | 3730282488 |
+| `DecoyBoo1` | 3730282493 |
+| `BaseAlarm1` | 3730282505 |
+| `CashS` | 3730282513 |
+| `CashM` | 3730282521 |
+| `CashL` | 3730282529 |
+| `DoubleCash` | 2079530254 |
+| `DoubleTraining` | 2079356260 |
+| `VIP` | 2079656255 |
+| `ExtraSlots` | 2079332259 |
+
 ### Como o recibo é processado
 
 `src/server/Monetization/ProcessReceipt.luau` é o único lugar que define
@@ -239,8 +272,8 @@ voltar, o `PurchaseId` já gravado impede a entrega dupla.
 1. Instalar o Roblox Studio atualizado e o Claude Code. Ligar o MCP do Studio
    (Assistant > MCP Servers > Enable Studio as MCP server) e o plugin Rojo.
 2. Publicar o place pela primeira vez (File > Publish to Roblox) e anotar abaixo:
-   - Universe ID: `preencher`
-   - Place ID: `preencher`
+   - Universe ID: `10775759574`
+   - Place ID: `127475605109985`
 3. Game Settings > Security > Enable Studio Access to API Services.
 4. Game Settings > Places > Max Players: **8** (o número de plots).
 5. Creator Dashboard > Monetization > Developer Products: criar cada item da tabela acima
