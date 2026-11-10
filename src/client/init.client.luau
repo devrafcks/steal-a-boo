@@ -14,6 +14,10 @@ require(Controllers.HUD)
 require(Controllers.Panels)
 require(Controllers.ShopUI)
 local Effects = require(Controllers.EffectsController)
+local Sound = require(Controllers.Sound)
+UI.clickSound = function()
+	Sound.play("Click", 0.35, 1)
+end
 local Input = require(Controllers.InputController)
 
 Remotes.get("DataUpdated").OnClientEvent:Connect(function(snapshot)
