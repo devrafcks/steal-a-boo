@@ -10,3 +10,5 @@ sourcemap.json
 *.rbxm
 roblox.toml
 /.claude/
+/build/
+/.luau/
