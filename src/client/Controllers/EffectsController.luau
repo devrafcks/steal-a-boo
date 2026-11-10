@@ -599,9 +599,9 @@ local function setupConveyor(part: BasePart)
 		s.CanQuery = false
 		s.CanTouch = false
 		s.CastShadow = false
-		s.Material = Enum.Material.Neon
+		s.Material = Enum.Material.SmoothPlastic
 		s.Color = Color3.fromRGB(255, 255, 255)
-		s.Transparency = 0.45
+		s.Transparency = 0.55
 		s.Size = axis == "X" and Vector3.new(0.35, 0.06, width * 0.8) or Vector3.new(width * 0.8, 0.06, 0.35)
 		s.Parent = fxFolder
 		table.insert(stripes, s)
@@ -687,7 +687,7 @@ task.spawn(function()
 				coin.Shape = Enum.PartType.Cylinder
 				coin.Size = Vector3.new(0.25, 1.2, 1.2)
 				coin.Color = Color3.fromRGB(255, 210, 60)
-				coin.Material = Enum.Material.Neon
+				coin.Material = Enum.Material.Metal
 				coin.Anchored = true
 				coin.CanCollide = false
 				coin.CanQuery = false

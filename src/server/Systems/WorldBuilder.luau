@@ -203,7 +203,7 @@ local function buildLighting()
 		Glare = 0.25,
 		Haze = 1.0,
 	}, Lighting)
-	mk("BloomEffect", { Intensity = 0.5, Size = 26, Threshold = 1.5 }, Lighting)
+	mk("BloomEffect", { Intensity = 0.22, Size = 20, Threshold = 2.2 }, Lighting)
 	mk("SunRaysEffect", { Intensity = 0.04, Spread = 0.6 }, Lighting)
 	mk(
 		"ColorCorrectionEffect",
@@ -542,8 +542,8 @@ local function buildPlaza(world: Instance)
 		Shape = Enum.PartType.Cylinder,
 		Size = Vector3.new(0.3, R * 2 + 3, R * 2 + 3),
 		CFrame = CFrame.new(0, 0.12, 0) * CFrame.Angles(0, 0, math.rad(90)),
-		Color = Color3.fromRGB(255, 240, 140),
-		Material = Enum.Material.Neon,
+		Color = Color3.fromRGB(245, 220, 150),
+		Material = Enum.Material.SmoothPlastic,
 		CanCollide = false,
 	}, plaza)
 	billboard(
@@ -575,8 +575,8 @@ local function buildPlaza(world: Instance)
 		Size = Vector3.new(10, 1, 10),
 		CFrame = CFrame.new(0, 0.6, 30),
 		Color = Color3.fromRGB(255, 255, 200),
-		Material = Enum.Material.Neon,
-		Transparency = 0.5,
+		Material = Enum.Material.SmoothPlastic,
+		Transparency = 0.35,
 		Neutral = true,
 		Duration = 0,
 	}, plaza)
@@ -915,18 +915,14 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 	}, plot)
 	billboard(sign, "Base livre", UDim2.fromOffset(200, 48), Vector3.zero, nil, 110)
 	-- Luz quente dentro da base (a feira é à noite)
-	local inner = mk(
-		"Part",
-		{
-			Name = "InnerLight",
-			Size = Vector3.one,
-			CFrame = cf * CFrame.new(0, 11, 0),
-			Transparency = 1,
-			CanCollide = false,
-			CanQuery = false,
-		},
-		plot
-	)
+	local inner = mk("Part", {
+		Name = "InnerLight",
+		Size = Vector3.one,
+		CFrame = cf * CFrame.new(0, 11, 0),
+		Transparency = 1,
+		CanCollide = false,
+		CanQuery = false,
+	}, plot)
 	mk("PointLight", { Range = 34, Brightness = 1.2, Color = Color3.fromRGB(255, 225, 200), Shadows = false }, inner)
 
 	mk("Part", {
@@ -943,8 +939,8 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		Size = Vector3.new(0.2, 7, 7),
 		CFrame = cf * CFrame.new(-14, 1.05, -hz + 5) * CFrame.Angles(0, 0, math.rad(90)),
 		Color = Color3.fromRGB(120, 255, 160),
-		Material = Enum.Material.Neon,
-		Transparency = 0.4,
+		Material = Enum.Material.SmoothPlastic,
+		Transparency = 0.25,
 		CanCollide = false,
 	}, plot)
 
@@ -963,11 +959,10 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		Shape = Enum.PartType.Cylinder,
 		Size = Vector3.new(0.4, 7, 7),
 		CFrame = cf * CFrame.new(12.5, 1.2, 19) * CFrame.Angles(0, 0, math.rad(90)),
-		Color = Color3.fromRGB(255, 210, 60),
-		Material = Enum.Material.Neon,
+		Color = Color3.fromRGB(235, 190, 70),
+		Material = Enum.Material.SmoothPlastic,
 	}, plot)
 	billboard(pad, "Cofre", UDim2.fromOffset(170, 40), Vector3.new(0, 4, 0), Color3.fromRGB(255, 230, 120), 80)
-	mk("PointLight", { Range = 12, Brightness = 1.5, Color = Color3.fromRGB(255, 210, 90) }, pad)
 
 	-- Esteiras pagas 2x / 3x / 4x (o prompt abre a compra no cliente)
 	local belts = {
@@ -1026,7 +1021,7 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		Size = Vector3.new(0.4, 5, 5),
 		CFrame = cf * CFrame.new(-19, 1.2, 19) * CFrame.Angles(0, 0, math.rad(90)),
 		Color = Color3.fromRGB(90, 220, 255),
-		Material = Enum.Material.Neon,
+		Material = Enum.Material.SmoothPlastic,
 	}, plot)
 	lift:SetAttribute("Target", "Level_2Landing")
 	mk("ProximityPrompt", {
@@ -1091,8 +1086,8 @@ local function buildZone(zonesFolder: Instance, zone)
 		Shape = Enum.PartType.Cylinder,
 		Size = Vector3.new(0.2, zone.radius * 2 + 2, zone.radius * 2 + 2),
 		CFrame = CFrame.new(zone.center + Vector3.new(0, 0.08, 0)) * CFrame.Angles(0, 0, math.rad(90)),
-		Color = zone.color,
-		Material = Enum.Material.Neon,
+		Color = zone.color:Lerp(Color3.new(1, 1, 1), 0.2),
+		Material = Enum.Material.SmoothPlastic,
 		CanCollide = false,
 	}, m)
 	-- Arco de entrada
