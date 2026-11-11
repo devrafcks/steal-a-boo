@@ -14,6 +14,7 @@
 	do Creator Store guardados em ServerStorage.ExternalAssets (ver assets/CREDITS.md).
 	Se algum desses não existir, usa a versão feita com primitivas.
 ]]
+local InsertService = game:GetService("InsertService")
 local Lighting = game:GetService("Lighting")
 local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
@@ -153,11 +154,53 @@ local function placeOnGround(model: Model, pos: Vector3, yaw: number?, groundY: 
 	return model
 end
 
--- Clona um modelo de ServerStorage.ExternalAssets (nil se não existir)
-local function asset(name: string): Model?
+-- Modelos gratuitos do Creator Store (IDs em Config.ExternalAssets, créditos em assets/CREDITS.md).
+-- Ordem: ServerStorage.ExternalAssets (place salvo no Studio) -> InsertService:LoadAsset (place
+-- publicado pelo CI, que não carrega essa pasta) -> nil (o mapa usa a versão feita com primitivas).
+local externalCache: { [string]: Model | false } = {}
+
+local function loadExternal(name: string): Model?
+	local cached = externalCache[name]
+	if cached ~= nil then
+		return cached or nil
+	end
 	local folder = ServerStorage:FindFirstChild("ExternalAssets")
 	local src = folder and folder:FindFirstChild(name)
-	if not src or not src:IsA("Model") then
+	if src and src:IsA("Model") then
+		externalCache[name] = src
+		return src
+	end
+	local id = Config.ExternalAssets[name]
+	if id then
+		local ok, container = pcall(function()
+			return InsertService:LoadAsset(id)
+		end)
+		if ok and container then
+			local model = container:FindFirstChildWhichIsA("Model")
+			if model then
+				model.Parent = nil
+				externalCache[name] = model
+				container:Destroy()
+				return model
+			end
+		else
+			warn(
+				"[WorldBuilder] não consegui carregar o modelo "
+					.. name
+					.. " ("
+					.. tostring(id)
+					.. "): usando primitivas"
+			)
+		end
+	end
+	externalCache[name] = false
+	return nil
+end
+
+-- Clona o modelo (sem scripts, ancorado). nil se não existir
+local function asset(name: string): Model?
+	local src = loadExternal(name)
+	if not src then
 		return nil
 	end
 	local c = src:Clone()
