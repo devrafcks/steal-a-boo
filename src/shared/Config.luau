@@ -14,9 +14,9 @@ local Config = {
 	PlaceVersionNote = "MVP",
 
 	DataStore = {
-		ProfileStoreName = "StealABoo_Player_v2", -- mude o sufixo se quiser resetar o save de todo mundo
-		OrderedCash = "StealABoo_CashAllTime_v2",
-		OrderedRebirths = "StealABoo_Rebirths_v2",
+		ProfileStoreName = "StealABoo_Player_v3", -- mude o sufixo se quiser resetar o save de todo mundo
+		OrderedCash = "StealABoo_CashAllTime_v3",
+		OrderedRebirths = "StealABoo_Rebirths_v3",
 		PurchaseIdMemoryDays = 45, -- por quantos dias lembramos de um PurchaseId já entregue
 		PurchaseIdMaxEntries = 200,
 		LeaderboardPushSeconds = 120, -- grava no OrderedDataStore a cada N segundos
@@ -48,7 +48,7 @@ local Config = {
 	-- Defesa contra o ladrão: qualquer jogador pode socar quem está carregando um Boo roubado
 	-- (ou tomar o Boo dele). Socos tiram "pegada"; zerou, o Boo cai no chão.
 	Combat = {
-		Punch = { range = 9, cooldown = 0.8, knockback = 28 },
+		Punch = { range = 10, cooldown = 0.8, knockback = 14 }, -- empurrão curto: o defensor consegue emendar os socos
 		GripBase = 3, -- socos necessários para o ladrão soltar o Boo
 		GripPerTwoSecurityLevels = 1, -- +1 de pegada a cada 2 níveis de Segurança do DONO do Boo
 		StunSeconds = 1.0, -- ladrão fica atordoado ao soltar

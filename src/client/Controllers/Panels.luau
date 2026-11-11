@@ -493,7 +493,7 @@ local labGrid = UI.make("Frame", {
 	Parent = labBody,
 })
 UI.make("UIGridLayout", {
-	CellSize = UDim2.fromOffset(310, 168),
+	CellSize = UDim2.fromOffset(300, 168),
 	CellPadding = UDim2.fromOffset(12, 12),
 	SortOrder = Enum.SortOrder.LayoutOrder,
 	Parent = labGrid,
