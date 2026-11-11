@@ -33,6 +33,11 @@ function CharacterService.set(player: Player, field: string, seconds: number)
 	CharacterService.refresh(player)
 end
 
+-- só a proteção de quem acabou de nascer (a praça NÃO conta): usada para socar/tomar de ladrões
+function CharacterService.isSpawnSafe(player: Player): boolean
+	return state(player).safeUntil > os.clock()
+end
+
 function CharacterService.isSafe(player: Player): boolean
 	local s = state(player)
 	if s.safeUntil > os.clock() then

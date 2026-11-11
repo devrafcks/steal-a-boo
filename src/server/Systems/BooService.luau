@@ -7,6 +7,12 @@
 	Se morrer, tomar slap/susto ou ser expulso, o Boo cai no chão por DroppedBooSeconds.
 	Ninguém pega o Boo -> volta para o dono original.
 
+	Defesa: qualquer jogador pode SOCAR (tecla Q) quem carrega um Boo roubado: cada soco tira 1 de
+	"pegada" (Config.Combat.GripBase + Segurança do dono); zerou, o Boo cai e o ladrão fica atordoado.
+	Também dá para TOMAR o Boo da mão do ladrão (prompt E no Boo carregado): vira de quem tomou
+	(se for o dono original, ele volta direto para a base). O ladrão fica marcado com um contorno
+	vermelho e "LADRÃO" para todo mundo ver.
+
 	Toda regra é checada aqui (servidor). O cliente só dispara prompts/remotes.
 ]]
 local Players = game:GetService("Players")
@@ -26,7 +32,7 @@ local droppedFolder: Instance
 local rng = Random.new()
 
 local zoneBoos: { [string]: { Model } } = {}
-type Carry = { key: string, fromUserId: number, model: Model }
+type Carry = { key: string, fromUserId: number, model: Model, grip: number, marker: { Instance } }
 local carrying: { [Player]: Carry } = {}
 
 local ZONE_BY_NAME = {}
@@ -92,6 +98,7 @@ function BooService.incomeMultiplier(player: Player, data): number
 	if ctx.Passes.owns(player, "VIP") then
 		m *= 1.1
 	end
+	m *= ctx.Upgrades.incomeMultiplier(data) -- trilha Gerador
 	-- Esteiras pagas (2x/3x/4x por 2 min)
 	if (data.IncomeBoostEnds or 0) > os.time() then
 		m *= math.max(1, data.IncomeBoostMult or 1)
@@ -105,7 +112,7 @@ function BooService.baseIncome(player: Player, data): number
 		local i = tonumber(slot)
 		local def = Config.Boos[key]
 		if def and i and ctx.Plots.isUnlocked(player, i) then
-			total += def.incomePerSec
+			total += def.incomePerSec * ctx.Upgrades.pedestalMultiplier(ctx.Upgrades.pedestalLevel(data, i))
 		end
 	end
 	return total
@@ -113,6 +120,10 @@ end
 
 function BooService.incomePerSec(player: Player, data): number
 	return BooService.baseIncome(player, data) * BooService.incomeMultiplier(player, data)
+end
+
+function BooService.vaultCapacity(player: Player, data): number
+	return ctx.Upgrades.vaultCapacity(data, BooService.incomePerSec(player, data))
 end
 
 -- Guarda no inventário e tenta colocar direto na base (melhor UX)
@@ -229,6 +240,13 @@ function BooService.tryCapture(player: Player, model: Model)
 
 	local position = model.PrimaryPart.Position
 	removeZoneBoo(model)
+
+	-- trilha Sorte: chance de um sorteio extra (com 3x de sorte) que fica com o melhor Boo
+	local luckBonus = ctx.Upgrades.luckMultiplier(data) - 1
+	if luckBonus > 0 and rng:NextNumber() < luckBonus then
+		local extra = Rarity.roll(zone.name, currentLuck() * 3 * (1 + zone.luckBias), rng)
+		key = Rarity.better(key, extra)
+	end
 
 	local lucky = false
 	if data.LuckyCaptures > 0 then
@@ -358,7 +376,9 @@ function BooService.isCarrying(player: Player): boolean
 	return carrying[player] ~= nil
 end
 
-local function attachCarry(thief: Player, key: string, fromUserId: number)
+local takeFromCarrier -- definido mais abaixo
+
+local function attachCarry(thief: Player, key: string, fromUserId: number, grip: number?)
 	local char = thief.Character
 	local head = char and char:FindFirstChild("Head") :: BasePart
 	if not head then
@@ -371,7 +391,54 @@ local function attachCarry(thief: Player, key: string, fromUserId: number)
 	weld.Parent = model.PrimaryPart
 	model.Name = "CarriedBoo"
 	model.Parent = char
-	carrying[thief] = { key = key, fromUserId = fromUserId, model = model }
+
+	-- Prompt: qualquer outro jogador pode tomar o Boo da mão do ladrão
+	local take = Instance.new("ProximityPrompt")
+	take.Name = "TakePrompt"
+	take.ActionText = "Tomar o Boo"
+	take.ObjectText = "Ladrão!"
+	take.HoldDuration = Config.Combat.TakeBackSeconds
+	take.MaxActivationDistance = Config.Combat.TakeBackRange
+	take.RequiresLineOfSight = false
+	take.Parent = model.PrimaryPart
+	take.Triggered:Connect(function(taker)
+		if ctx.Net.allowPrompt(taker, "TakeBack") then
+			takeFromCarrier(taker, thief)
+		end
+	end)
+
+	-- Marcador visível para todos: contorno vermelho atravessando paredes + "LADRÃO"
+	local highlight = Instance.new("Highlight")
+	highlight.Name = "ThiefMarker"
+	highlight.FillTransparency = 1
+	highlight.OutlineColor = Color3.fromRGB(255, 60, 70)
+	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	highlight.Parent = char
+	local tag = Instance.new("BillboardGui")
+	tag.Name = "ThiefTag"
+	tag.Size = UDim2.fromOffset(120, 28)
+	tag.StudsOffset = Vector3.new(0, 4.4, 0)
+	tag.AlwaysOnTop = true
+	tag.MaxDistance = 220
+	tag.LightInfluence = 0
+	local label = Instance.new("TextLabel")
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.fromScale(1, 1)
+	label.Font = Enum.Font.LuckiestGuy
+	label.TextScaled = true
+	label.TextColor3 = Color3.fromRGB(255, 80, 90)
+	label.TextStrokeTransparency = 0
+	label.Text = "LADRÃO!"
+	label.Parent = tag
+	tag.Parent = head
+
+	carrying[thief] = {
+		key = key,
+		fromUserId = fromUserId,
+		model = model,
+		grip = grip or Config.Combat.GripBase,
+		marker = { highlight, tag },
+	}
 	thief:SetAttribute("Carrying", key)
 	ctx.Character.refresh(thief)
 	return true
@@ -382,6 +449,9 @@ local function clearCarry(player: Player)
 	if c then
 		if c.model then
 			c.model:Destroy()
+		end
+		for _, inst in ipairs(c.marker or {}) do
+			inst:Destroy()
 		end
 		carrying[player] = nil
 		player:SetAttribute("Carrying", nil)
@@ -413,6 +483,13 @@ local function startPickup(player: Player, dropped: Model)
 	end
 	local key = dropped:GetAttribute("BooKey")
 	local fromUserId = dropped:GetAttribute("FromUserId")
+	if
+		player.UserId ~= fromUserId
+		and os.clock() - (dropped:GetAttribute("DroppedAt") or 0) < Config.World.DroppedOwnerPrioritySeconds
+	then
+		ctx.notify(player, "Esse Boo é de outro jogador: só o dono pega nos primeiros segundos.", "info")
+		return
+	end
 	dropped:Destroy()
 	if player.UserId == fromUserId then
 		returnToOwner(key, fromUserId)
@@ -442,6 +519,7 @@ function BooService.dropCarried(player: Player, reason: string)
 	end
 	local model = BooModel.build(c.key, { anchored = true, cframe = CFrame.new(ground) })
 	model:SetAttribute("FromUserId", c.fromUserId)
+	model:SetAttribute("DroppedAt", os.clock())
 	BooModel.addLabel(model, "Caiu! Pegue rápido")
 	local p = Instance.new("ProximityPrompt")
 	p.Name = "PickupPrompt"
@@ -545,7 +623,9 @@ function BooService.trySteal(thief: Player, model: Model)
 	ctx.Plots.renderSlots(victim)
 	ctx.PlayerData.markDirty(victim)
 
-	if not attachCarry(thief, key, victim.UserId) then
+	local grip = Config.Combat.GripBase
+		+ math.floor(ctx.Upgrades.securityLevel(vData) * Config.Combat.GripPerTwoSecurityLevels / 2)
+	if not attachCarry(thief, key, victim.UserId, grip) then
 		returnToOwner(key, victim.UserId)
 		return
 	end
@@ -555,6 +635,105 @@ function BooService.trySteal(thief: Player, model: Model)
 		"StealAlert",
 		{ thief = thief.DisplayName, victim = victim.DisplayName, booKey = key, thiefId = thief.UserId }
 	)
+end
+
+-- Tomar o Boo da mão do ladrão (prompt E no Boo carregado)
+function takeFromCarrier(taker: Player, carrier: Player)
+	local c = carrying[carrier]
+	if not c or taker == carrier then
+		return
+	end
+	if carrying[taker] then
+		ctx.notify(taker, "Você já está carregando um Boo!", "warn")
+		return
+	end
+	if not ctx.Net.alive(taker) or ctx.Character.isFrozen(taker) then
+		return
+	end
+	local cpos = ctx.Net.position(carrier)
+	if not cpos or not ctx.Net.near(taker, cpos, Config.Combat.TakeBackRange + 3) then
+		return
+	end
+	if ctx.Character.isSpawnSafe(carrier) then
+		return
+	end
+	local isOwner = taker.UserId == c.fromUserId
+	if not isOwner and not ctx.Plots.getPlot(taker) then
+		ctx.notify(taker, "Você precisa de uma base para ficar com esse Boo.", "warn")
+		return
+	end
+	local key, fromUserId, grip = c.key, c.fromUserId, c.grip
+	clearCarry(carrier)
+	ctx.notify(carrier, string.format("%s tomou o Boo de você!", taker.DisplayName), "danger")
+	if isOwner then
+		returnToOwner(key, fromUserId)
+		local data = ctx.PlayerData.data(taker)
+		if data then
+			data.Stats.Recovered += 1
+		end
+		ctx.fx("Recovered", { userId = taker.UserId })
+		ctx.notify(taker, string.format("Você recuperou seu %s!", key), "success")
+	else
+		attachCarry(taker, key, fromUserId, grip)
+		ctx.notify(taker, string.format("Você tomou o %s! Leve para a SUA base!", key), "info")
+	end
+	ctx.fx("TakeBack", { position = cpos, by = taker.DisplayName })
+end
+BooService.takeFromCarrier = takeFromCarrier
+
+-- Soco (tecla Q / botão Bater): derruba a pegada do ladrão mais perto
+function BooService.punch(attacker: Player)
+	local _, _, root = ctx.Net.alive(attacker)
+	if not root or ctx.Character.isFrozen(attacker) then
+		return
+	end
+	local cfg = Config.Combat.Punch
+	if not ctx.Net.cooldown(attacker, "punch", cfg.cooldown) then
+		return
+	end
+	local from = root.Position
+	local best: Player?, bestDist = nil, math.huge
+	for target in pairs(carrying) do
+		if target ~= attacker then
+			local pos = ctx.Net.position(target)
+			if pos then
+				local d = (pos - from).Magnitude
+				if d <= cfg.range and d < bestDist then
+					best, bestDist = target, d
+				end
+			end
+		end
+	end
+	if not best then
+		ctx.fx("PunchMiss", { userId = attacker.UserId })
+		return
+	end
+	if ctx.Character.isSpawnSafe(best) then
+		return
+	end
+	local c = carrying[best]
+	local targetPos = ctx.Net.position(best)
+	if not c or not targetPos then
+		return
+	end
+	local data = ctx.PlayerData.data(attacker)
+	if data then
+		data.Stats.Punches += 1
+	end
+	c.grip -= 1
+	local dir = (targetPos - from) * Vector3.new(1, 0, 1)
+	dir = dir.Magnitude > 0.01 and dir.Unit or Vector3.new(0, 0, 1)
+	ctx.fx("Punch", { position = targetPos + Vector3.new(0, 2, 0), by = attacker.UserId, grip = math.max(0, c.grip) })
+	ctx.fx("Knockback", { velocity = dir * cfg.knockback + Vector3.new(0, 12, 0) }, best)
+	if c.grip <= 0 then
+		BooService.dropCarried(best, "punched")
+		ctx.Character.set(best, "frozenUntil", Config.Combat.StunSeconds)
+		ctx.notify(best, string.format("%s te nocauteou e o Boo caiu!", attacker.DisplayName), "danger")
+		ctx.notify(attacker, "Nocaute! O Boo caiu no chão. Pegue de volta!", "success")
+	else
+		ctx.notify(best, string.format("%s te acertou! Pegada: %d", attacker.DisplayName, c.grip), "warn")
+		ctx.notify(attacker, string.format("Acertou! Faltam %d soco(s) para ele soltar.", c.grip), "info")
+	end
 end
 
 function BooService.onPlacedPrompt(player: Player, model: Model)
@@ -673,6 +852,7 @@ function BooService.init(c)
 	ctx.Net.on("RequestPlaceBoo", BooService.place)
 	ctx.Net.on("RequestStoreBoo", BooService.store)
 	ctx.Net.on("RequestSellBoo", BooService.sell)
+	ctx.Net.on("RequestPunch", BooService.punch)
 
 	ctx.PlayerData.Releasing:Connect(function(player)
 		BooService.dropCarried(player, "left")
@@ -714,10 +894,16 @@ function BooService.init(c)
 			for player, profile in pairs(ctx.PlayerData.all()) do
 				if profile:IsActive() then
 					local data = profile.Data
-					local gain = BooService.incomePerSec(player, data) * dt
+					local income = BooService.incomePerSec(player, data)
+					local gain = income * dt
 					if gain > 0 then
-						data.Vault = (data.Vault or 0) + gain
-						ctx.PlayerData.markDirty(player)
+						-- o cofre tem limite: cheio, a renda para até o dono coletar
+						local cap = ctx.Upgrades.vaultCapacity(data, income)
+						local vault = data.Vault or 0
+						if vault < cap then
+							data.Vault = math.min(cap, vault + gain)
+							ctx.PlayerData.markDirty(player)
+						end
 					end
 				end
 			end
