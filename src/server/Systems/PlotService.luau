@@ -18,6 +18,7 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Config = require(Shared.Config)
+local Label = require(Shared.Util.Label)
 local BooModel = require(Shared.BooModel)
 local Format = require(Shared.Util.Format)
 local Rarity = require(Shared.Util.Rarity)
@@ -307,21 +308,11 @@ local function liftPad(parent: Instance, cf: CFrame, up: boolean, target: string
 		Material = Enum.Material.SmoothPlastic,
 	}, parent)
 	pad:SetAttribute("Target", target)
-	local gui = mk("BillboardGui", {
-		Size = UDim2.fromOffset(90, 30),
-		StudsOffsetWorldSpace = Vector3.new(0, 2.5, 0),
-		MaxDistance = 60,
-		LightInfluence = 0,
-	}, pad)
-	mk("TextLabel", {
-		BackgroundTransparency = 1,
-		Size = UDim2.fromScale(1, 1),
-		Font = Enum.Font.FredokaOne,
-		TextScaled = true,
-		TextColor3 = Color3.new(1, 1, 1),
-		TextStrokeTransparency = 0.2,
-		Text = up and "PISE: SUBIR" or "PISE: DESCER",
-	}, gui)
+	Label.pill(pad, up and "PISE: SUBIR" or "PISE: DESCER", {
+		width = 210,
+		lift = 6.5,
+		color = up and Color3.fromRGB(150, 225, 255) or Color3.fromRGB(255, 200, 150),
+	})
 	return pad
 end
 

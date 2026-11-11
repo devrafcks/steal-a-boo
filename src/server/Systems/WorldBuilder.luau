@@ -21,6 +21,7 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Config = require(Shared.Config)
+local Label = require(Shared.Util.Label)
 
 local WorldBuilder = {}
 
@@ -945,7 +946,7 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		Material = Enum.Material.SmoothPlastic,
 	}, plot)
 	prompt(lockButton, "Trancar base", "Portão", 0.2, "LockPrompt")
-	billboard(lockButton, "🔒 Portão", UDim2.fromOffset(110, 28), Vector3.new(0, 3, 0), nil, 50)
+	Label.pill(lockButton, "🔒 Portão", { width = 160, lift = 6, color = Color3.fromRGB(150, 255, 190) })
 
 	-- Placa com nome do dono e Cash/s (texto atualizado pelo PlotService)
 	local sign = mk("Part", {
@@ -1005,7 +1006,7 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		Color = Color3.fromRGB(235, 190, 70),
 		Material = Enum.Material.SmoothPlastic,
 	}, plot)
-	billboard(pad, "Cofre", UDim2.fromOffset(170, 40), Vector3.new(0, 4, 0), Color3.fromRGB(255, 230, 120), 80)
+	Label.pill(pad, "Cofre", { width = 250, lift = 6.5, color = Color3.fromRGB(255, 230, 120), maxDistance = 55 })
 
 	-- Esteiras pagas 2x / 3x / 4x (o prompt abre a compra no cliente)
 	local belts = {
@@ -1013,7 +1014,7 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		{ "Belt3x", "3x", Color3.fromRGB(255, 170, 70), -4 },
 		{ "Belt4x", "4x", Color3.fromRGB(255, 90, 170), 4 },
 	}
-	for _, b in ipairs(belts) do
+	for beltIndex, b in ipairs(belts) do
 		local def = Config.Products[b[1]]
 		local part = mk("Part", {
 			Name = "PaidBelt_" .. b[2],
@@ -1028,14 +1029,13 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		local p = prompt(part, "Ativar " .. b[2] .. " (R$" .. def.price .. ")", "Esteira paga", 0.2, "BeltPrompt")
 		p:SetAttribute("BuyProduct", b[1])
 		p.MaxActivationDistance = 8
-		billboard(
-			part,
-			string.format("%s RENDA\n2 min · R$%d", b[2], def.price),
-			UDim2.fromOffset(120, 44),
-			Vector3.new(0, 3.5, 0),
-			b[3],
-			60
-		)
+		Label.pill(part, string.format("%s RENDA\nR$%d", b[2], def.price), {
+			width = 132,
+			height = 58,
+			lift = 6.2 + (beltIndex - 1) * 2.6, -- escalonadas para não se sobrepor de lado
+			color = b[3],
+			maxDistance = 36,
+		})
 	end
 
 	-- Placa de upgrade (construir andares)
@@ -1048,14 +1048,7 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		MaterialVariant = M.Planks,
 	}, plot)
 	prompt(board, "Construir andar", "Melhorar base", 0.3, "UpgradePrompt").MaxActivationDistance = 9
-	billboard(
-		board,
-		"🏗️ Melhorar base",
-		UDim2.fromOffset(150, 34),
-		Vector3.new(0, 4, 0),
-		Color3.fromRGB(255, 240, 150),
-		60
-	)
+	Label.pill(board, "🏗️ Melhorar base", { width = 220, lift = 8, color = Color3.fromRGB(255, 240, 150) })
 
 	-- Elevador do térreo (o andar 2 só existe depois do upgrade)
 	local lift = mk("Part", {
@@ -1067,7 +1060,7 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		Material = Enum.Material.SmoothPlastic,
 	}, plot)
 	lift:SetAttribute("Target", "Level_2Landing")
-	billboard(lift, "PISE: SUBIR", UDim2.fromOffset(90, 30), Vector3.new(0, 2.5, 0), nil, 60)
+	Label.pill(lift, "PISE: SUBIR", { width = 200, lift = 6.5, color = Color3.fromRGB(150, 225, 255) })
 	mk("Part", {
 		Name = "GroundLanding",
 		Size = Vector3.new(4, 0.2, 4),
