@@ -40,17 +40,29 @@ local Config = {
 		TrainRange = 8,
 		SafeSpawnSeconds = 4, -- depois de nascer, ninguém te acerta poder/susto
 		NewPlayerProtectSeconds = 120, -- novato (1ª sessão) não pode ser roubado nos 2 primeiros minutos
-		DroppedBooSeconds = 8, -- Boo derrubado fica no chão por 8s
+		DroppedBooSeconds = 10, -- Boo derrubado fica no chão por 10s
+		DroppedOwnerPrioritySeconds = 2.5, -- nos primeiros segundos só o dono original pode pegar de volta
 		MaxInteractDistance = 20, -- qualquer ação a mais de 20 studs é ignorada (anti-exploit)
+	},
+
+	-- Defesa contra o ladrão: qualquer jogador pode socar quem está carregando um Boo roubado
+	-- (ou tomar o Boo dele). Socos tiram "pegada"; zerou, o Boo cai no chão.
+	Combat = {
+		Punch = { range = 9, cooldown = 0.8, knockback = 28 },
+		GripBase = 3, -- socos necessários para o ladrão soltar o Boo
+		GripPerTwoSecurityLevels = 1, -- +1 de pegada a cada 2 níveis de Segurança do DONO do Boo
+		StunSeconds = 1.0, -- ladrão fica atordoado ao soltar
+		TakeBackSeconds = 1.2, -- tempo segurando E para tomar o Boo da mão do ladrão
+		TakeBackRange = 8,
 	},
 
 	Economy = {
 		StartingCash = 50,
 		IncomeTickSeconds = 1,
-		TrainingCashCostBase = 10,
-		TrainingCostGrowth = 1.06, -- custo = base * growth ^ (treinos já feitos naquele status)
-		SpeedPerTrain = 0.25,
-		ThrowPerTrain = 0.25,
+		TrainingCashCostBase = 20,
+		TrainingCostGrowth = 1.045, -- custo = base * growth ^ (treinos já feitos naquele status)
+		SpeedPerTrain = 0.15,
+		ThrowPerTrain = 0.15,
 		MaxSpeed = 32, -- WalkSpeed máximo vindo do treino
 		MaxThrow = 40,
 		BaseWalkSpeed = 16,
@@ -62,22 +74,22 @@ local Config = {
 	},
 
 	Carousel = { -- carrossel da praça: compra um Boo surpresa com Cash
-		Price = 150,
-		PriceGrowthPerRebirth = 1.5,
+		Price = 400,
+		PriceGrowthPerRebirth = 1.8,
 		Zone = "Fairground",
 		LuckBias = 0.15,
 	},
 
 	Rebirth = {
-		CashRequiredBase = 10000,
-		CashRequiredGrowth = 1.8,
+		CashRequiredBase = 100000,
+		CashRequiredGrowth = 3.0,
 		IncomeMultiplierPerRebirth = 0.25, -- +25% por rebirth
 		KeepRarityAtOrAbove = "Epic", -- Boos Epic ou melhores ficam depois do rebirth
 	},
 
 	Daily = {
 		StreakMax = 7,
-		Rewards = { 50, 100, 200, 350, 500, 800, 1500 }, -- cash por dia da sequência
+		Rewards = { 100, 200, 400, 700, 1000, 1600, 3000 }, -- cash por dia da sequência
 		StreakBonusItemDay7 = "LuckyTicket", -- dia 7 = +1 Super Lucky Capture
 	},
 
@@ -87,23 +99,76 @@ local Config = {
 		BaseGroundSlots = 6,
 		ExtraSlotsPass = 4, -- gamepass ExtraSlots (slots 7 a 10 do térreo)
 		VIPSlots = 2, -- gamepass VIP (slots 11 e 12 do térreo)
-		-- Andares de cima: comprados com Cash no painel Base (8 slots cada)
+		-- Andares de cima: comprados com Cash (placa Melhorar base / painel Base), 8 slots cada
 		FloorSlots = 8,
 		FloorHeight = 14,
 		Floors = {
 			{ name = "Térreo", cost = 0 },
-			{ name = "2º andar", cost = 2500 },
-			{ name = "3º andar", cost = 40000 },
-			{ name = "4º andar", cost = 500000 },
+			{ name = "2º andar", cost = 10000 },
+			{ name = "3º andar", cost = 400000 },
+			{ name = "4º andar", cost = 12000000 },
+			{ name = "5º andar", cost = 500000000 },
+			{ name = "6º andar", cost = 20000000000 },
 		},
-		MaxSlots = 36, -- 12 + 8 + 8 + 8
+		MaxSlots = 52, -- 12 + 5 andares x 8
 	},
 
 	-- Cofre e esteira de coleta: a renda dos Boos cai no cofre da base.
 	-- Pise na esteira de coleta (perto do seu spawn) para passar o cofre para o seu Cash.
+	-- O cofre TEM LIMITE (segundos de renda): cheio, a renda para até você coletar.
 	Vault = {
 		CollectRadius = 5,
+		BaseSeconds = 90,
+		SecondsPerLevel = 45, -- trilha Cofre
+		MinCapacity = 150,
+		AutoCollectSeconds = 6, -- passe Coleta Automática: passa o cofre pro Cash a cada N segundos
 	},
+
+	-- Laboratório: trilhas de upgrade pagas com Cash do jogo. Custo do nível L -> L+1 = baseCost * growth ^ L.
+	Upgrades = {
+		Income = {
+			name = "Gerador",
+			icon = "⚙️",
+			max = 20,
+			perLevel = 0.08,
+			baseCost = 8000,
+			growth = 1.85,
+			desc = "+8% de renda por nível",
+		},
+		Vault = {
+			name = "Cofre",
+			icon = "🏦",
+			max = 15,
+			baseCost = 1500,
+			growth = 1.6,
+			desc = "Guarda +45s de renda por nível",
+		},
+		Luck = {
+			name = "Sorte",
+			icon = "🍀",
+			max = 15,
+			perLevel = 0.04,
+			baseCost = 8000,
+			growth = 1.7,
+			desc = "+4% de sorte nas capturas por nível",
+		},
+		Security = {
+			name = "Segurança",
+			icon = "🛡️",
+			max = 10,
+			baseCost = 5000,
+			growth = 1.7,
+			desc = "Ladrão demora mais para roubar, segura menos e o portão fica trancado mais tempo",
+		},
+		Order = { "Income", "Vault", "Luck", "Security" },
+		StealHoldPerLevel = 0.12, -- segundos a mais para roubar, por nível de Segurança
+		GateLockPerLevel = 3, -- segundos a mais de portão trancado, por nível de Segurança
+	},
+
+	-- Pedestal: cada slot da base evolui separado (tecla F perto do Boo). O nível fica no slot,
+	-- então se o Boo for roubado ou guardado, o pedestal continua evoluído.
+	Pedestal = { max = 10, perLevel = 0.25, baseCost = 1500, growth = 2.6 },
+	SaleCostMultiplier = 0.5, -- produto "Promoção" divide o custo de TODOS os upgrades por 2
 
 	-- Gamepasses (permanentes). IDs começam em 0.
 	GamePasses = {
@@ -135,6 +200,13 @@ local Config = {
 			icon = "🏠",
 			desc = "Quatro slots extras permanentes no térreo.",
 		},
+		AutoCollect = {
+			id = 0,
+			price = 149,
+			name = "Coleta Automática",
+			icon = "🤖",
+			desc = "O cofre da base passa sozinho para o seu Cash, sem precisar pisar no pad.",
+		},
 	},
 
 	-- Dev Products (consumíveis). IDs começam em 0.
@@ -142,6 +214,17 @@ local Config = {
 	--   ServerLuck (mult, duration) | PersonalCash2x (duration) | LuckyCaptures (amount)
 	--   Consumable (item, amount)   | Cash (amount) | IncomeBoost (mult, duration)
 	Products = {
+		-- Promoção: metade do preço em TODOS os upgrades (Laboratório, pedestais e andares)
+		Sale50 = {
+			id = 0,
+			price = 59,
+			name = "Promoção de Upgrades (10 min)",
+			tab = "Boosts",
+			icon = "🏷️",
+			kind = "UpgradeSale",
+			duration = 600,
+			desc = "Todos os upgrades e andares pela METADE do preço por 10 min.",
+		},
 		-- Esteiras pagas da base: multiplicam a renda dos Boos por pouco tempo
 		Belt2x = {
 			id = 3730282380,
@@ -350,8 +433,8 @@ local Config = {
 			tab = "Cash",
 			icon = "💵",
 			kind = "Cash",
-			amount = 1500,
-			desc = "+1.500 Cash",
+			amount = 8000,
+			desc = "+8.000 Cash",
 		},
 		CashM = {
 			id = 3730282521,
@@ -360,8 +443,8 @@ local Config = {
 			tab = "Cash",
 			icon = "💰",
 			kind = "Cash",
-			amount = 6000,
-			desc = "+6.000 Cash",
+			amount = 40000,
+			desc = "+40.000 Cash",
 		},
 		CashL = {
 			id = 3730282529,
@@ -370,8 +453,18 @@ local Config = {
 			tab = "Cash",
 			icon = "🏦",
 			kind = "Cash",
-			amount = 15000,
-			desc = "+15.000 Cash",
+			amount = 120000,
+			desc = "+120.000 Cash",
+		},
+		CashXL = {
+			id = 0,
+			price = 299,
+			name = "Tesouro de Cash",
+			tab = "Cash",
+			icon = "👑",
+			kind = "Cash",
+			amount = 400000,
+			desc = "+400.000 Cash",
 		},
 	},
 
@@ -460,7 +553,7 @@ local Config = {
 			rarity = "Rare",
 			incomePerSec = 10,
 			zone = "Fairground",
-			weight = 5,
+			weight = 4,
 			color = Color3.fromRGB(120, 230, 160),
 			accessory = "Sprinkles",
 		},
@@ -468,36 +561,36 @@ local Config = {
 		LampBoo = {
 			name = "LampBoo",
 			rarity = "Rare",
-			incomePerSec = 15,
+			incomePerSec = 14,
 			zone = "Midway",
-			weight = 30,
+			weight = 40,
 			color = Color3.fromRGB(255, 170, 70),
 			accessory = "Lamp",
 		},
 		BalloonBoo = {
 			name = "BalloonBoo",
 			rarity = "Rare",
-			incomePerSec = 22,
+			incomePerSec = 20,
 			zone = "Midway",
-			weight = 22,
+			weight = 30,
 			color = Color3.fromRGB(90, 200, 255),
 			accessory = "Balloon",
 		},
 		JellyBoo = {
 			name = "JellyBoo",
 			rarity = "Epic",
-			incomePerSec = 40,
+			incomePerSec = 30,
 			zone = "Midway",
-			weight = 8,
+			weight = 4,
 			color = Color3.fromRGB(170, 90, 255),
 			accessory = "Wobble",
 		},
 		CarouselBoo = {
 			name = "CarouselBoo",
 			rarity = "Epic",
-			incomePerSec = 55,
+			incomePerSec = 42,
 			zone = "Midway",
-			weight = 5,
+			weight = 2,
 			color = Color3.fromRGB(255, 120, 120),
 			accessory = "Pole",
 		},
@@ -505,27 +598,27 @@ local Config = {
 		MoonBoo = {
 			name = "MoonBoo",
 			rarity = "Epic",
-			incomePerSec = 80,
+			incomePerSec = 60,
 			zone = "MoonLot",
-			weight = 25,
+			weight = 70,
 			color = Color3.fromRGB(180, 190, 255),
 			accessory = "Moon",
 		},
 		CometBoo = {
 			name = "CometBoo",
 			rarity = "Legendary",
-			incomePerSec = 150,
+			incomePerSec = 90,
 			zone = "MoonLot",
-			weight = 10,
+			weight = 4,
 			color = Color3.fromRGB(80, 120, 255),
 			accessory = "Comet",
 		},
 		StarlightBoo = {
 			name = "StarlightBoo",
 			rarity = "Legendary",
-			incomePerSec = 220,
+			incomePerSec = 130,
 			zone = "MoonLot",
-			weight = 6,
+			weight = 1.5,
 			color = Color3.fromRGB(255, 240, 120),
 			accessory = "Star",
 		},
@@ -533,36 +626,36 @@ local Config = {
 		CrystalBoo = {
 			name = "CrystalBoo",
 			rarity = "Mythic",
-			incomePerSec = 450,
+			incomePerSec = 220,
 			zone = "SecretTent",
-			weight = 20,
+			weight = 60,
 			color = Color3.fromRGB(150, 255, 255),
 			accessory = "Crystal",
 		},
 		PrismBoo = {
 			name = "PrismBoo",
 			rarity = "Mythic",
-			incomePerSec = 700,
+			incomePerSec = 330,
 			zone = "SecretTent",
-			weight = 10,
+			weight = 20,
 			color = Color3.fromRGB(255, 130, 255),
 			accessory = "Prism",
 		},
 		AuroraBoo = {
 			name = "AuroraBoo",
 			rarity = "Secret",
-			incomePerSec = 1500,
+			incomePerSec = 700,
 			zone = "SecretTent",
-			weight = 3,
+			weight = 1.2,
 			color = Color3.fromRGB(60, 255, 190),
 			accessory = "Aurora",
 		},
 		JackpotBoo = {
 			name = "JackpotBoo",
 			rarity = "Secret",
-			incomePerSec = 2500,
+			incomePerSec = 1300,
 			zone = "SecretTent",
-			weight = 1,
+			weight = 0.4,
 			color = Color3.fromRGB(255, 215, 0),
 			accessory = "Crown",
 		},
@@ -583,7 +676,7 @@ local Config = {
 		{
 			name = "Midway",
 			label = "Corredor das Barracas",
-			minStat = 6,
+			minStat = 8,
 			luckBias = 0.1,
 			maxBoos = 7,
 			center = Vector3.new(170, 0, 0),
@@ -593,7 +686,7 @@ local Config = {
 		{
 			name = "MoonLot",
 			label = "Terreno da Lua",
-			minStat = 14,
+			minStat = 16,
 			luckBias = 0.2,
 			maxBoos = 6,
 			center = Vector3.new(245, 0, 0),
@@ -603,7 +696,7 @@ local Config = {
 		{
 			name = "SecretTent",
 			label = "Tenda Secreta",
-			minStat = 24,
+			minStat = 30,
 			luckBias = 0.35,
 			maxBoos = 4,
 			center = Vector3.new(-150, 0, 0),
@@ -633,6 +726,15 @@ local Config = {
 		Music = 1838796580, -- APMOfficial "Carnival"
 		Volume = 0.4,
 	},
+	-- Modelos 3D gratuitos do Creator Store (ver assets/CREDITS.md). O WorldBuilder os carrega por ID
+	-- quando o place não tem a pasta ServerStorage.ExternalAssets (ex.: publicado pelo CI/CD).
+	ExternalAssets = {
+		Tree = 12549617200,
+		Bench = 393609716,
+		PopcornCart = 1489187264,
+		StringLights = 9320917020,
+	},
+
 	-- MaterialVariants gerados no Studio (MaterialService). Se não existirem, usa o material base.
 	Materials = {
 		Planks = "BooCandyPlanks",
