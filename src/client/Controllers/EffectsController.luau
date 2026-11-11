@@ -789,6 +789,54 @@ task.spawn(function()
 	end
 end)
 
+HANDLERS.Punch = function(p)
+	if p.position then
+		burst(p.position, T.Orange, 18, 0.7)
+		worldText(
+			p.position + Vector3.new(0, 1.5, 0),
+			p.grip and p.grip > 0 and "POW!" or "NOCAUTE!",
+			p.grip and p.grip > 0 and T.Orange or T.Red,
+			1.1
+		)
+	end
+	Effects.play("Slap", 0.7)
+end
+
+HANDLERS.PunchMiss = function(p)
+	if p.userId == player.UserId then
+		Effects.play("Whoosh", 0.35)
+	end
+end
+
+HANDLERS.TakeBack = function(p)
+	if p.position then
+		burst(p.position, T.Green, 26, 0.8)
+		worldText(p.position + Vector3.new(0, 3, 0), "TOMOU!", T.Green, 1.2)
+	end
+	Effects.play("Pop", 0.8)
+end
+
+HANDLERS.UpgradeBought = function(p)
+	local pos = headPos(p.userId)
+	if pos then
+		burst(pos, T.Cyan, 22, 0.6)
+		worldText(pos + Vector3.new(0, 2.5, 0), "NV " .. tostring(p.level) .. "!", T.Cyan, 1.2)
+	end
+	if p.userId == player.UserId then
+		Effects.play("RareSting", 0.7)
+	end
+end
+
+HANDLERS.PedestalUp = function(p)
+	if p.position then
+		burst(p.position, T.Yellow, 30, 0.7)
+		worldText(p.position + Vector3.new(0, 1.5, 0), "NV " .. tostring(p.level) .. "!", T.Yellow, 1.2)
+	end
+	if p.userId == player.UserId then
+		Effects.play("Coin", 0.8)
+	end
+end
+
 function Effects.init()
 	Remotes.get("ReplicateEffect").OnClientEvent:Connect(function(name, payload)
 		local h = HANDLERS[name]

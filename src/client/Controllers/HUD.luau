@@ -123,7 +123,7 @@ local side = UI.make("Frame", {
 	Name = "SideButtons",
 	BackgroundTransparency = 1,
 	Position = UDim2.fromOffset(12, 176),
-	Size = UDim2.fromOffset(110, 480),
+	Size = UDim2.fromOffset(110, 540),
 	Parent = UI.root,
 })
 UI.make("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = side })
@@ -166,10 +166,13 @@ end)
 sideButton(5, "🏆 Ranking", T.Orange, function()
 	UI.toggle("Leaderboard")
 end)
-sideButton(6, "🏠 Base", Color3.fromRGB(150, 110, 255), function()
+sideButton(6, "🧪 Lab", Color3.fromRGB(70, 190, 190), function()
+	UI.toggle("Lab")
+end)
+sideButton(7, "🏠 Base", Color3.fromRGB(150, 110, 255), function()
 	UI.toggle("Base")
 end)
-sideButton(7, "⚙️ Ajustes", T.Grey, function()
+sideButton(8, "⚙️ Ajustes", T.Grey, function()
 	UI.toggle("Settings")
 end)
 
@@ -184,6 +187,20 @@ local lockButton, lockLabel = UI.button(UI.root, {
 	MaxTextSize = 22,
 	OnClick = function()
 		Remotes.get("ToggleBaseGate"):FireServer()
+	end,
+})
+
+-- Bater no ladrão (tecla Q): só faz algo se alguém estiver carregando um Boo roubado por perto
+UI.button(UI.root, {
+	Name = "PunchButton",
+	Text = "🥊 Bater (Q)",
+	Color = T.Red,
+	AnchorPoint = Vector2.new(1, 1),
+	Position = UDim2.new(1, -12, 1, -172),
+	Size = UDim2.fromOffset(170, 52),
+	MaxTextSize = 22,
+	OnClick = function()
+		Remotes.get("RequestPunch"):FireServer()
 	end,
 })
 
@@ -300,7 +317,9 @@ local function render(data)
 	cashLabel.Text = "$" .. Format.compact(data.Cash)
 	local boost = (data.IncomeBoostEnds or 0) > os.time() and string.format("  (%dx esteira!)", data.IncomeBoostMult)
 		or ((data.Cash2xEnds or 0) > os.time() and "  (2x!)" or "")
-	vaultLine.Text = string.format("Cofre: $%s  (pise no pad dourado)", Format.compact(data.Vault or 0))
+	local vault, cap = data.Vault or 0, math.max(1, data.VaultCapacity or 1)
+	vaultLine.Text = string.format("Cofre: $%s / $%s", Format.compact(vault), Format.compact(cap))
+	vaultLine.TextColor3 = vault >= cap * 0.98 and T.Red or (vault >= cap * 0.8 and T.Orange or T.Yellow)
 	incomeLabel.Text = string.format("+$%s/s%s", Format.compact(data.IncomePerSec), boost)
 	statLine.Text = string.format("Speed %.1f  •  Throw %.1f", data.Speed, data.ThrowPower)
 	statLine2.Text = string.format("Rebirths %d  •  Sorte+ %d", data.Rebirths, data.LuckyCaptures)

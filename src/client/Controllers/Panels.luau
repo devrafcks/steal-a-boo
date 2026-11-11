@@ -455,7 +455,152 @@ local function renderBase(data)
 end
 
 ----------------------------------------------------------------------
+-- Laboratório: trilhas de upgrade (Gerador, Cofre, Sorte, Segurança)
+----------------------------------------------------------------------
+local U = Config.Upgrades
+local _, labBody = UI.panel("Lab", "Laboratório de Upgrades", UDim2.fromOffset(660, 500))
+
+local saleBar = UI.make(
+	"Frame",
+	{ BackgroundColor3 = Color3.fromRGB(150, 60, 150), Size = UDim2.new(1, 0, 0, 46), Parent = labBody }
+)
+UI.corner(saleBar, 12)
+UI.stroke(saleBar, 3)
+local saleText = UI.text(saleBar, {
+	Text = "",
+	Size = UDim2.new(1, -200, 1, -8),
+	Position = UDim2.fromOffset(12, 4),
+	XAlign = Enum.TextXAlignment.Left,
+	MaxTextSize = 20,
+	ZIndex = 52,
+})
+local _, saleLabel = UI.button(saleBar, {
+	Text = "",
+	Color = T.Yellow,
+	Size = UDim2.fromOffset(180, 36),
+	Position = UDim2.new(1, -188, 0, 5),
+	MaxTextSize = 17,
+	ZIndex = 52,
+	OnClick = function()
+		require(script.Parent.ShopUI).buyProduct("Sale50")
+	end,
+})
+
+local labGrid = UI.make("Frame", {
+	BackgroundTransparency = 1,
+	Position = UDim2.fromOffset(0, 56),
+	Size = UDim2.new(1, 0, 1, -100),
+	Parent = labBody,
+})
+UI.make("UIGridLayout", {
+	CellSize = UDim2.fromOffset(310, 168),
+	CellPadding = UDim2.fromOffset(12, 12),
+	SortOrder = Enum.SortOrder.LayoutOrder,
+	Parent = labGrid,
+})
+UI.text(labBody, {
+	Text = "Pedestais: aperte F perto de um Boo na sua base para evoluir só aquele slot.",
+	Size = UDim2.new(1, 0, 0, 26),
+	Position = UDim2.new(0, 0, 1, -32),
+	Color = T.Muted,
+	MaxTextSize = 17,
+})
+
+local labCards = {}
+for i, track in ipairs(U.Order) do
+	local def = U[track]
+	local card = UI.make("Frame", { BackgroundColor3 = T.PanelLight, LayoutOrder = i, Parent = labGrid })
+	UI.corner(card, 14)
+	UI.stroke(card, 3)
+	UI.text(card, {
+		Text = def.icon .. " " .. def.name,
+		Font = T.FontTitle,
+		Color = T.Yellow,
+		Size = UDim2.new(1, -16, 0, 30),
+		Position = UDim2.fromOffset(8, 6),
+		XAlign = Enum.TextXAlignment.Left,
+		MaxTextSize = 26,
+	})
+	local levelText = UI.text(card, {
+		Text = "",
+		Size = UDim2.new(1, -16, 0, 22),
+		Position = UDim2.fromOffset(8, 38),
+		XAlign = Enum.TextXAlignment.Left,
+		Color = T.Cyan,
+		MaxTextSize = 20,
+	})
+	local effectText = UI.text(card, {
+		Text = "",
+		Size = UDim2.new(1, -16, 0, 40),
+		Position = UDim2.fromOffset(8, 62),
+		XAlign = Enum.TextXAlignment.Left,
+		Color = T.Muted,
+		MaxTextSize = 17,
+		Font = T.FontBold,
+		Stroke = false,
+	})
+	local button, buttonLabel = UI.button(card, {
+		Text = "",
+		Color = T.Green,
+		Size = UDim2.new(1, -16, 0, 42),
+		Position = UDim2.new(0, 8, 1, -50),
+		MaxTextSize = 20,
+		OnClick = function()
+			Remotes.get("RequestUpgradeTrack"):FireServer(track)
+		end,
+	})
+	labCards[track] = { level = levelText, effect = effectText, button = button, label = buttonLabel }
+end
+
+local function trackEffect(track: string, level: number): string
+	if track == "Income" then
+		return string.format("Renda x%.2f", 1 + level * U.Income.perLevel)
+	elseif track == "Vault" then
+		return string.format(
+			"Cofre guarda %ds de renda",
+			Config.Vault.BaseSeconds + level * Config.Vault.SecondsPerLevel
+		)
+	elseif track == "Luck" then
+		return string.format("+%d%% de chance de raros", math.floor(level * U.Luck.perLevel * 100 + 0.5))
+	end
+	return string.format(
+		"Roubar demora %.1fs • %d socos • portão %ds",
+		0.8 + level * U.StealHoldPerLevel,
+		Config.Combat.GripBase + math.floor(level * Config.Combat.GripPerTwoSecurityLevels / 2),
+		Config.World.GateLockSeconds + level * U.GateLockPerLevel
+	)
+end
+
+local function renderLab(data)
+	for _, track in ipairs(U.Order) do
+		local def, card = U[track], labCards[track]
+		local level = (data.UpgradeLevels and data.UpgradeLevels[track]) or 0
+		local cost = data.UpgradeCosts and data.UpgradeCosts[track]
+		card.level.Text = string.format("Nível %d / %d", level, def.max)
+		if cost then
+			card.effect.Text = trackEffect(track, level) .. "\n→ " .. trackEffect(track, level + 1)
+			card.label.Text = string.format("Evoluir  $%s", Format.compact(cost))
+			UI.setDisabled(card.button, data.Cash < cost, T.Green)
+		else
+			card.effect.Text = trackEffect(track, level) .. "\n(máximo)"
+			card.label.Text = "Nível máximo"
+			UI.setDisabled(card.button, true)
+		end
+	end
+	local left = (data.UpgradeSaleEnds or 0) - os.time()
+	local price = Config.Products.Sale50.price
+	if left > 0 then
+		saleText.Text = string.format("PROMOÇÃO ativa: upgrades e andares -50%%  (%s)", Format.time(left))
+		saleLabel.Text = string.format("+10 min  R$ %d", price)
+	else
+		saleText.Text = "Promoção: upgrades e andares pela METADE do preço por 10 min"
+		saleLabel.Text = string.format("Ativar  R$ %d", price)
+	end
+end
+
+----------------------------------------------------------------------
 State.onReady(function(data)
+	renderLab(data)
 	renderBase(data)
 	renderInventory(data)
 	renderRebirth(data)

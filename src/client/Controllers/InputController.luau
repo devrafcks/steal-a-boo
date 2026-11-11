@@ -13,6 +13,7 @@ local ProximityPromptService = game:GetService("ProximityPromptService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
+local Remotes = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared").Remotes)
 local UI = require(script.Parent.UIController)
 local HUD = require(script.Parent.HUD)
 local ShopUI = require(script.Parent.ShopUI)
@@ -78,10 +79,27 @@ local function updatePrompts()
 					else
 						sp.Enabled = true
 						sp.ActionText = "Roubar"
-						sp.HoldDuration = 0.8
+						-- o servidor define o tempo (Segurança do dono do Boo)
+						sp.HoldDuration = child:GetAttribute("StealHold") or 0.8
 					end
 				end
+				-- evoluir pedestal (F): só no meu Boo
+				local pp = child.PrimaryPart:FindFirstChild("PedestalPrompt")
+				if pp then
+					pp.Enabled = child:GetAttribute("OwnerUserId") == player.UserId
+				end
 			end
+		end
+	end
+end
+
+-- Prompt "Tomar o Boo" no ladrão: aparece para todos, menos para o próprio ladrão
+local function updateTakePrompts()
+	for _, other in Players:GetPlayers() do
+		local carried = other.Character and other.Character:FindFirstChild("CarriedBoo")
+		local take = carried and carried.PrimaryPart and carried.PrimaryPart:FindFirstChild("TakePrompt")
+		if take then
+			take.Enabled = other ~= player
 		end
 	end
 end
@@ -98,6 +116,8 @@ function InputController.init()
 			UI.toggle("Inventory")
 		elseif input.KeyCode == Enum.KeyCode.L then
 			UI.toggle("Shop")
+		elseif input.KeyCode == Enum.KeyCode.Q then
+			Remotes.get("RequestPunch"):FireServer()
 		end
 	end)
 
@@ -115,6 +135,7 @@ function InputController.init()
 	task.spawn(function()
 		while true do
 			updatePrompts()
+			updateTakePrompts()
 			task.wait(0.4)
 		end
 	end)
