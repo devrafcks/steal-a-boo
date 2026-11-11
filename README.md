@@ -304,7 +304,7 @@ Dashboard com **exatamente** o nome e o preço abaixo e cole o ID no campo `id` 
 
 ### IDs criados na Roblox
 
-Todos os produtos e passes foram criados via Open Cloud (MCP do Studio) com ícone próprio
+Todos os 23 produtos e 5 passes foram criados via Open Cloud (MCP do Studio) com ícone próprio
 (`assets/store`) e já estão no `Config.luau`.
 
 | Chave | ID |
@@ -334,6 +334,9 @@ Todos os produtos e passes foram criados via Open Cloud (MCP do Studio) com íco
 | `DoubleTraining` | 2079356260 |
 | `VIP` | 2079656255 |
 | `ExtraSlots` | 2079332259 |
+| `Sale50` | 3730315517 |
+| `CashXL` | 3730315525 |
+| `AutoCollect` | 2078582292 |
 
 ### Como o recibo é processado
 

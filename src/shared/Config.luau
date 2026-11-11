@@ -201,7 +201,7 @@ local Config = {
 			desc = "Quatro slots extras permanentes no térreo.",
 		},
 		AutoCollect = {
-			id = 0,
+			id = 2078582292,
 			price = 149,
 			name = "Coleta Automática",
 			icon = "🤖",
@@ -216,7 +216,7 @@ local Config = {
 	Products = {
 		-- Promoção: metade do preço em TODOS os upgrades (Laboratório, pedestais e andares)
 		Sale50 = {
-			id = 0,
+			id = 3730315517,
 			price = 59,
 			name = "Promoção de Upgrades (10 min)",
 			tab = "Boosts",
@@ -457,7 +457,7 @@ local Config = {
 			desc = "+120.000 Cash",
 		},
 		CashXL = {
-			id = 0,
+			id = 3730315525,
 			price = 299,
 			name = "Tesouro de Cash",
 			tab = "Cash",

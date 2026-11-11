@@ -1,5 +1,14 @@
 [
   {
+    "key": "Sale50",
+    "name": "Promoção de Upgrades (10 min)",
+    "icon": "🏷️",
+    "tab": "Boosts",
+    "price": 59,
+    "mult": null,
+    "amount": null
+  },
+  {
     "key": "Belt2x",
     "name": "Esteira 2x (2 min)",
     "icon": "⏩",
@@ -168,7 +177,7 @@
     "tab": "Cash",
     "price": 29,
     "mult": null,
-    "amount": 1500
+    "amount": 8000
   },
   {
     "key": "CashM",
@@ -177,7 +186,7 @@
     "tab": "Cash",
     "price": 79,
     "mult": null,
-    "amount": 6000
+    "amount": 40000
   },
   {
     "key": "CashL",
@@ -186,7 +195,16 @@
     "tab": "Cash",
     "price": 149,
     "mult": null,
-    "amount": 15000
+    "amount": 120000
+  },
+  {
+    "key": "CashXL",
+    "name": "Tesouro de Cash",
+    "icon": "👑",
+    "tab": "Cash",
+    "price": 299,
+    "mult": null,
+    "amount": 400000
   },
   {
     "key": "DoubleCash",
@@ -221,6 +239,15 @@
     "icon": "🏠",
     "tab": "Passes",
     "price": 199,
+    "mult": null,
+    "amount": null
+  },
+  {
+    "key": "AutoCollect",
+    "name": "Coleta Automática",
+    "icon": "🤖",
+    "tab": "Passes",
+    "price": 149,
     "mult": null,
     "amount": null
   }
