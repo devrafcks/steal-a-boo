@@ -43,7 +43,7 @@ PlayerData.TEMPLATE = {
 	Daily = { lastDay = -1, streak = 0 },
 	PurchaseIds = {}, -- [purchaseId] = os.time() da entrega
 	Settings = { ReduceScares = false, MusicVolume = 0.5 },
-	Stats = { Steals = 0, Captures = 0, TimesStolen = 0 },
+	Stats = { Steals = 0, Captures = 0, TimesStolen = 0, Punches = 0, Recovered = 0 },
 	FirstJoin = 0,
 	TutorialDone = false,
 	Cash2xEnds = 0, -- os.time() em que acaba o 2x Cash pessoal
@@ -51,6 +51,9 @@ PlayerData.TEMPLATE = {
 	Vault = 0, -- renda guardada na base, esperando a coleta
 	IncomeBoostMult = 1, -- esteira paga ativa (2x/3x/4x)
 	IncomeBoostEnds = 0, -- os.time() em que a esteira paga acaba
+	Upgrades = { Income = 0, Vault = 0, Luck = 0, Security = 0 }, -- níveis do Laboratório
+	PedestalLevels = {}, -- [slot] = nível do pedestal (1 = padrão). O nível fica no slot, não no Boo
+	UpgradeSaleEnds = 0, -- os.time() em que a Promoção de Upgrades acaba
 }
 
 local Profiles: { [Player]: any } = {}
