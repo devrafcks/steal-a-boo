@@ -25,6 +25,17 @@
     "MaterialService": {
       "$path": "src/materials",
       "$ignoreUnknownInstances": true
+    },
+    "Workspace": {
+      "$className": "Workspace",
+      "$ignoreUnknownInstances": true,
+      "Terrain": {
+        "$className": "Terrain",
+        "$ignoreUnknownInstances": true,
+        "$properties": {
+          "Decoration": true
+        }
+      }
     }
   }
 }
