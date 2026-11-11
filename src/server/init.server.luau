@@ -27,6 +27,7 @@ local CombatService = require(Systems.CombatService)
 local RebirthService = require(Systems.RebirthService)
 local DailyRewardService = require(Systems.DailyRewardService)
 local ShopService = require(Systems.ShopService)
+local UpgradeService = require(Systems.UpgradeService)
 local GamePasses = require(Monetization.GamePasses)
 local Products = require(Monetization.Products)
 local ProcessReceipt = require(Monetization.ProcessReceipt)
@@ -55,6 +56,8 @@ local ctx = {
 	Shop = ShopService,
 	Passes = GamePasses,
 	Products = Products,
+	Upgrades = UpgradeService,
+	Format = Format,
 }
 
 -- Toast para um jogador. kind: info | success | warn | danger | rare
@@ -102,6 +105,17 @@ local function buildSnapshot(player: Player, data)
 		SlotCount = PlotService.unlockedCount(player),
 		BaseLevel = PlotService.baseLevel(player),
 		NextFloor = PlotService.nextFloor(player),
+		VaultCapacity = math.floor(BooService.vaultCapacity(player, data)),
+		UpgradeLevels = data.Upgrades,
+		UpgradeCosts = {
+			Income = UpgradeService.cost(data, "Income"),
+			Vault = UpgradeService.cost(data, "Vault"),
+			Luck = UpgradeService.cost(data, "Luck"),
+			Security = UpgradeService.cost(data, "Security"),
+		},
+		PedestalLevels = data.PedestalLevels,
+		UpgradeSaleEnds = data.UpgradeSaleEnds,
+		LuckBonus = UpgradeService.luckMultiplier(data) - 1,
 		MaxLevel = #Config.Plot.Floors,
 		Vault = math.floor(data.Vault or 0),
 		IncomeBoostMult = data.IncomeBoostMult,
@@ -133,6 +147,7 @@ CombatService.init(ctx)
 RebirthService.init(ctx)
 DailyRewardService.init(ctx)
 ShopService.init(ctx)
+UpgradeService.init(ctx)
 Leaderboards.init(ctx)
 ProcessReceipt.init(ctx)
 PlayerData.init() -- por último: o Loaded dispara depois que todos já escutam

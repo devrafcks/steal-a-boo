@@ -500,6 +500,7 @@ function BooModel.addLabel(model: Model, extraText: string?)
 	name.TextScaled = true
 	name.TextColor3 = Color3.new(1, 1, 1)
 	name.TextStrokeTransparency = 0.3
+	name.Name = "NameLabel"
 	name.Text = def.name
 	name.Parent = gui
 
@@ -511,6 +512,7 @@ function BooModel.addLabel(model: Model, extraText: string?)
 	info.TextScaled = true
 	info.TextColor3 = Rarity.color(def.rarity)
 	info.TextStrokeTransparency = 0.3
+	info.Name = "InfoLabel"
 	info.Text = extraText or string.format("%s • $%d/s", Rarity.label(def.rarity), def.incomePerSec)
 	info.Parent = gui
 

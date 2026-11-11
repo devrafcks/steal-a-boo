@@ -80,6 +80,12 @@ GRANTS.IncomeBoost = function(_player, data, def)
 	return true
 end
 
+-- Promoção: upgrades e andares pela metade enquanto durar (soma tempo se comprar de novo)
+GRANTS.UpgradeSale = function(_player, data, def)
+	data.UpgradeSaleEnds = math.max(os.time(), data.UpgradeSaleEnds or 0) + def.duration
+	return true
+end
+
 GRANTS.LuckyCaptures = function(_player, data, def)
 	data.LuckyCaptures += def.amount
 	return true

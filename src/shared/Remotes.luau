@@ -24,6 +24,9 @@ Remotes.ClientEvents = {
 	"RequestUseScare", -- (scareKey)
 	"ToggleBaseGate", -- () tranca o portão da própria base
 	"RequestUpgradeBase", -- () constrói o próximo andar da base
+	"RequestUpgradeTrack", -- (trilha) evolui Gerador/Cofre/Sorte/Segurança
+	"RequestUpgradePedestal", -- (slotIndex) evolui o pedestal de um slot
+	"RequestPunch", -- () soca o ladrão mais perto
 	"UpdateSettings", -- ({ReduceScares, MusicVolume})
 }
 
