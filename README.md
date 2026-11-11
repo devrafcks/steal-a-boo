@@ -28,11 +28,15 @@
 - [Galeria](#galeria)
 - [Loop principal](#loop-principal)
 - [Funcionalidades](#funcionalidades)
+- [Controles](#controles)
+- [Upgrades e combate](#upgrades-e-combate)
+- [Balanceamento](#balanceamento)
 - [Stack e arquitetura](#stack-e-arquitetura)
 - [Como rodar](#como-rodar)
 - [Testando no Studio](#testando-no-studio)
 - [Configuração única](#configuração-única)
 - [Monetização](#monetização)
+- [CI/CD](#cicd)
 - [Checklist humano para publicar](#checklist-humano-para-publicar)
 - [Decisões de design](#decisões-de-design)
 - [Convenção de commits](#convenção-de-commits)
@@ -64,17 +68,20 @@ de captura que pedem cada vez mais Speed ou Throw Power.
 1. **Treine** Speed (esteira) e Throw Power (alvo) na praça pagando Cash.
 2. **Capture** Boos nas zonas. Zonas mais longe exigem mais status e têm Boos mais raros.
 3. **Coloque** os Boos nos slots da sua base. Cada um gera Cash por segundo, que cai no cofre.
-4. **Colete** pisando no pad dourado da esteira de coleta e **construa andares** (até o 4º).
-5. **Roube** Boos de bases com o portão aberto e corra de volta para a sua.
-6. **Defenda** trancando o portão, usando alarme, isca, slap, freeze e sustos cômicos.
-7. **Rebirth** para multiplicar a renda para sempre.
-8. **Volte todo dia** para o Daily e suba no ranking global.
+4. **Colete** o cofre pisando no pad dourado (ele tem limite: cheio, a renda para) e **construa andares** (até o 6º).
+5. **Evolua** a base: Laboratório (Gerador, Cofre, Sorte, Segurança) e o pedestal de cada slot (tecla F).
+6. **Roube** Boos de bases com o portão aberto e corra de volta para a sua.
+7. **Defenda**: tranque o portão, use alarme, isca, slap, freeze e sustos, ou **soque o ladrão** (Q) e **tome o Boo de volta**.
+8. **Rebirth** para multiplicar a renda para sempre.
+9. **Volte todo dia** para o Daily e suba no ranking global.
 
 ## Funcionalidades
 
 - 16 Boos originais em 7 raridades (Comum a Secreto), feitos só com primitivas
 - Mapa gerado por código: terreno de grama com lago, morros e mata, praça, 8 bases e 4 zonas temáticas
-- Bases com até 4 andares (36 slots), elevadores, cofre e esteira de coleta
+- Bases com até 6 andares (52 slots), elevadores de pisar, cofre com limite e esteira de coleta
+- Laboratório com 4 trilhas de upgrade e pedestais evolutivos por slot (níveis 1 a 10)
+- Combate ao ladrão: socos, pegada, nocaute, tomar o Boo de volta e marcador "LADRÃO"
 - Esteiras pagas 2x, 3x e 4x de renda por 2 minutos
 - Céu noturno com lua, estrelas, nuvens rosadas e fogos de artifício
 - Texturas originais geradas no Studio e modelos 3D gratuitos do Creator Store
@@ -86,11 +93,73 @@ de captura que pedem cada vez mais Speed ou Throw Power.
   Susto Festa, Boo Isca e Alarme da Base
 - Opção "Reduzir sustos" para quem não curte o overlay
 - Rebirth, Daily com sequência de 7 dias, ranking global com OrderedDataStore
-- Loja com abas, 21 dev products e 4 gamepasses, todos lidos do `Config.luau`
+- Loja com abas, 23 dev products e 5 gamepasses, todos lidos do `Config.luau`
+- CI/CD no GitHub Actions: lint, testes, simulação de balanceamento, build e publicação na Roblox
 - `ProcessReceipt` único e idempotente por `PurchaseId`
 - Server Luck compartilhado com banner para todo o servidor
 - Rate limit em todos os remotes e validação de distância, dono, cooldown e estado
 - UI responsiva para celular e PC, tutorial de 4 passos na primeira sessão
+
+## Controles
+
+| Tecla / botão | Ação |
+| --- | --- |
+| WASD e espaço | Andar e pular |
+| E (segurar) | Capturar, treinar, colocar, guardar ou roubar um Boo; tomar o Boo da mão de um ladrão |
+| F | Evoluir o pedestal do Boo da sua base (custo aparece no prompt) |
+| Q ou botão Bater | Socar o ladrão mais perto que esteja carregando um Boo roubado |
+| 1 a 9 | Usar poderes e sustos da hotbar |
+| L, B | Abrir a Loja, abrir a Bolsa |
+| Pisar no pad dourado | Coletar o cofre |
+| Pisar nos pads azul e laranja | Subir e descer de andar |
+
+## Upgrades e combate
+
+**Laboratório** (botão Lab no HUD). Cada trilha tem custo `baseCost x growth^nível`, pago com Cash do jogo:
+
+| Trilha | Efeito por nível | Máx. |
+| --- | --- | --- |
+| Gerador | +8% de renda | 20 |
+| Cofre | guarda +45s de renda | 15 |
+| Sorte | +4% de chance de um sorteio extra com 3x de sorte | 15 |
+| Segurança | roubar demora +0,12s, +1 de pegada a cada 2 níveis, portão trancado +3s | 10 |
+
+**Pedestal**: cada slot evolui separado (tecla F perto do Boo), +25% de renda por nível até o 10 (x3,25).
+O nível fica no slot: se o Boo for roubado ou guardado, o pedestal continua evoluído.
+
+**Cofre com limite**: a renda guarda no máximo `segundos do cofre x renda por segundo`. Cheio, para de render
+até você coletar (a cor do texto no HUD avisa). O passe **Coleta Automática** passa o cofre sozinho a cada 6s.
+
+**Defesa contra o ladrão**:
+1. Quem rouba fica com contorno vermelho e a etiqueta "LADRÃO!" visível através das paredes.
+2. Qualquer jogador pode **socar** (Q): cada soco tira 1 de pegada (3 + Segurança do dono). Zerou, o Boo cai e o ladrão fica 1s atordoado.
+3. Qualquer jogador pode **tomar** o Boo da mão do ladrão (segurar E por 1,2s). Se for o dono, o Boo volta direto para a base; se for outro jogador, ele passa a levar o Boo para a base dele.
+4. Boo derrubado: só o dono pega nos primeiros 2,5s; depois qualquer um pode; em 10s sem ninguém, volta para o dono.
+5. Os poderes continuam valendo: Slap, Freeze, Susto, Isca e Alarme.
+
+## Balanceamento
+
+O jogo ficou propositalmente mais lento e difícil: treino de +0,15 por vez com custo 1,045^n, zonas que pedem
+mais status (8, 16 e 30), raros bem mais raros, andares até 20 bilhões e upgrades que somam centenas de milhões.
+O simulador [`tools/balance/sim.js`](tools/balance/sim.js) lê o `Config.luau` e joga como um jogador **gratuito, ativo e
+eficiente** (compra sempre o melhor retorno). Jogadores reais são mais lentos que isso.
+
+```bash
+node tools/balance/sim.js 100
+```
+
+| Marco | Tempo do jogador ideal |
+| --- | --- |
+| Corredor das Barracas (status 8) | 8 min |
+| Terreno da Lua (status 16) | 20 min |
+| 2º andar | 24 min |
+| 3º andar e Tenda Secreta (status 30) | 1,1 h |
+| 4º andar | 1,5 h |
+| 1º Boo Secreto | 2,2 h |
+| 5º andar | 4,5 h |
+| 6º andar | cerca de 54 h |
+
+Quer mudar o ritmo? Mexa no `Config.luau`, rode o simulador e o teste (`lune run tests/config-check`).
 
 ## Stack e arquitetura
 
@@ -102,12 +171,17 @@ de captura que pedem cada vez mais Speed ou Throw Power.
 | [ProfileStore](https://madstudioroblox.github.io/ProfileStore/) | Save de jogador com session lock |
 | [Selene](https://github.com/Kampfkarren/selene) e [StyLua](https://github.com/JohnnyMorganz/StyLua) | Lint e formatação |
 | [luau-lsp](https://github.com/JohnnyMorganz/luau-lsp) | Análise estática |
+| [Lune](https://lune-org.github.io/docs) | Teste do `Config.luau` fora do Studio |
+| GitHub Actions | CI (lint, testes, build) e deploy para a Roblox |
 
 ```
 steal-a-boo/
   default.project.json        mapeamento Rojo
   rokit.toml  wally.toml      ferramentas e pacotes
-  assets/                     logo e CREDITS.md
+  assets/                     logo, capturas, arte da loja e CREDITS.md
+  tests/                      teste do Config (Lune)
+  tools/                      gerador da arte da loja e simulador de balanceamento
+  .github/workflows/          ci.yml e deploy.yml
   src/
     shared/                   ReplicatedStorage.Shared
       Config.luau             o único arquivo de balance, IDs e preços
@@ -120,7 +194,7 @@ steal-a-boo/
       init.server.luau        bootstrap e contexto compartilhado
       Data/                   PlayerData (ProfileStore) e Leaderboards
       Monetization/           ProcessReceipt, Products, GamePasses, ReceiptStore
-      Systems/                Plot, Boo, Character, Training, Combat, Rebirth,
+      Systems/                Plot, Boo, Character, Training, Combat, Rebirth, Upgrade,
                               DailyReward, Shop, AntiExploit, WorldBuilder
     client/                   StarterPlayerScripts.Client
       init.client.luau
@@ -197,12 +271,14 @@ Dashboard com **exatamente** o nome e o preço abaixo e cole o ID no campo `id` 
 | `DoubleCash` | 2x Cash | 99 | Sua base gera o dobro de Cash para sempre. |
 | `DoubleTraining` | 2x Training | 149 | Treino rende o dobro de Speed e Throw Power. |
 | `ExtraSlots` | +4 Base Slots | 199 | Quatro slots extras permanentes no térreo. |
+| `AutoCollect` | Coleta Automática | 149 | O cofre da base passa sozinho para o Cash. |
 | `VIP` | VIP | 249 | Tag VIP, aura, +10% Cash e +2 slots no térreo. |
 
 ### Developer Products
 
 | Chave no Config | Nome | Preço (R$) | Entrega |
 | --- | --- | --- | --- |
+| `Sale50` | Promoção de Upgrades (10 min) | 59 | Upgrades, pedestais e andares pela metade do preço |
 | `Belt2x` | Esteira 2x (2 min) | 15 | Renda dos Boos em dobro por 2 min |
 | `Belt3x` | Esteira 3x (2 min) | 25 | Renda triplicada por 2 min |
 | `Belt4x` | Esteira 4x (2 min) | 39 | Renda quadruplicada por 2 min |
@@ -221,9 +297,10 @@ Dashboard com **exatamente** o nome e o preço abaixo e cole o ID no campo `id` 
 | `ScareParty1` | Susto Festa (1 uso, área) | 39 | 1 uso |
 | `DecoyBoo1` | Boo Isca (1 uso) | 29 | 1 uso |
 | `BaseAlarm1` | Alarme da Base (1 uso, 60s) | 25 | 1 uso |
-| `CashS` | Saco de Cash | 29 | +1.500 Cash |
-| `CashM` | Baú de Cash | 79 | +6.000 Cash |
-| `CashL` | Cofre de Cash | 149 | +15.000 Cash |
+| `CashS` | Saco de Cash | 29 | +8.000 Cash |
+| `CashM` | Baú de Cash | 79 | +40.000 Cash |
+| `CashL` | Cofre de Cash | 149 | +120.000 Cash |
+| `CashXL` | Tesouro de Cash | 299 | +400.000 Cash |
 
 ### IDs criados na Roblox
 
@@ -267,6 +344,32 @@ perfil não tiver carregado, entrega e grava o `PurchaseId` no perfil no mesmo p
 save imediato e só devolve `PurchaseGranted` quando o DataStore confirma. Se o mesmo recibo
 voltar, o `PurchaseId` já gravado impede a entrega dupla.
 
+## CI/CD
+
+Dois workflows em `.github/workflows`:
+
+| Workflow | Quando roda | O que faz |
+| --- | --- | --- |
+| `ci.yml` | Todo push e pull request | StyLua, Selene, teste do Config, simulação de balanceamento, `wally install` e `rojo build` (guarda o `.rbxl` como artefato) |
+| `deploy.yml` | Push na `main` que mude `src/`, o projeto Rojo ou os pacotes, ou manual | Repete as validações **exigindo todos os IDs de produtos e passes**, gera o place e publica via Open Cloud |
+
+Sem o secret abaixo o deploy só valida e gera o place, e avisa que **não publicou**.
+
+**Ligar a publicação automática (uma vez):**
+
+1. Abra [create.roblox.com/dashboard/credentials](https://create.roblox.com/dashboard/credentials) e clique em **Create API Key**.
+2. Nome: `github-deploy`. Em **Access Permissions** adicione **Place Publishing** (`universe-places`), escolha o jogo
+   **Steal a Boo!** e marque a operação **Write**. Para reiniciar servidores depois do deploy, adicione também **Universe**
+   com **Write**.
+3. Em **Accepted IP Addresses** use `0.0.0.0/0` (os IPs do GitHub Actions mudam) e crie a chave. Copie o valor (ele só aparece uma vez).
+4. No GitHub: repositório > **Settings > Secrets and variables > Actions > New repository secret**. Nome `ROBLOX_API_KEY`, valor a chave.
+5. (Opcional) Em **Variables**, crie `RESTART_SERVERS` = `true` para reiniciar os servidores a cada deploy.
+   Isso expulsa quem está jogando, por isso vem desligado. Também dá para marcar a opção ao rodar o workflow à mão.
+
+**Importante:** o repositório é a fonte da verdade. A publicação substitui o conteúdo do place pelo que o Rojo gera, então
+edições feitas só no Studio e nunca commitadas se perdem. Os modelos 3D gratuitos são carregados por ID (`Config.ExternalAssets`)
+e os materiais ficam em `src/materials`.
+
 ## Checklist humano para publicar
 
 1. Instalar o Roblox Studio atualizado e o Claude Code. Ligar o MCP do Studio
@@ -278,7 +381,7 @@ voltar, o `PurchaseId` já gravado impede a entrega dupla.
 4. Game Settings > Places > Max Players: **8** (o número de plots).
 5. Creator Dashboard > Monetization > Developer Products: criar cada item da tabela acima
    com o mesmo nome e preço, ícone 512x512, e colar o ID em `Config.Products.<chave>.id`.
-6. Monetization > Passes: criar os 4 gamepasses com o mesmo nome e preço e colar os IDs em
+6. Monetization > Passes: criar os 5 gamepasses com o mesmo nome e preço e colar os IDs em
    `Config.GamePasses.<chave>.id`.
 7. Conferir que não sobrou `id = 0` nos itens que devem aparecer na loja.
 8. (Opcional) Monetization > Shop: marcar produtos e passes como Listed só depois de o
@@ -300,15 +403,19 @@ place publicado, peça explicitamente e desligue a permissão depois.
 
 | Tema | Decisão |
 | --- | --- |
-| Requisito das zonas | `minStat` compara com o **maior** entre Speed e Throw Power. Speed vai até 16 (WalkSpeed 32), então a Tenda Secreta (24) exige Throw. |
+| Requisito das zonas | `minStat` compara com o **maior** entre Speed e Throw Power. Speed vai até 16 (WalkSpeed 32), então a Tenda Secreta (30) exige Throw. |
 | Portão | Começa aberto. O dono tranca por `GateLockSeconds` (40s) e depois o portão fica aberto pelo menos `GateOpenSeconds` (20s). Trancado, intrusos são expulsos e ninguém rouba. `GateCooldownSeconds` ficou só informativo (soma dos dois). |
 | Server Luck | Afeta só sorteios (spawn, captura, carrossel), não a renda. Vence o maior multiplicador ativo e cada compra mantém o próprio tempo. |
 | Sorte | Multiplica o peso das raridades Rare para cima. Comuns não mudam. |
 | Cofre | A renda vai para o cofre da base e só vira Cash quando o dono pisa no pad dourado. O Cash vitalício do ranking conta na coleta. |
-| Andares | Térreo com 12 slots (6 livres, 4 do passe ExtraSlots, 2 do VIP). 2º, 3º e 4º andar custam 2.5K, 40K e 500K e têm 8 slots cada. Rebirth não derruba os andares. |
+| Andares | Térreo com 12 slots (6 livres, 4 do passe ExtraSlots, 2 do VIP). Do 2º ao 6º andar custam 10K, 400K, 12M, 500M e 20B e têm 8 slots cada. Rebirth não derruba andares, upgrades nem pedestais. |
 | Esteiras pagas | Vale o maior multiplicador ativo. Comprar de novo soma 2 minutos. |
 | Boo inicial | O jogador novo começa com um MarshBoo já colocado no slot 1. |
-| Custo do treino | Crescimento de 1.06 por treino (1.12 travava a progressão na Tenda Secreta). |
+| Custo do treino | Cresce 4,5% por treino feito (1,045^n). Chegar na Tenda Secreta (Throw 30) custa milhões de propósito. |
+| Pedestal | Nível guardado no slot, não no Boo: roubar ou guardar o Boo não apaga o investimento do dono. |
+| Promoção | Divide por 2 upgrades, pedestais e andares. Não afeta treino, rebirth nem carrossel. |
+| Monetização | O jogo é gratuito e dá para terminar sem pagar, só que bem mais devagar. As compras aceleram (Cash, Promoção, esteiras, sorte) e a Coleta Automática tira o trabalho de voltar à base. Nenhum item pago sorteia prêmio com Robux. |
+| Combate | Só dá para socar ou tomar o Boo de quem está carregando um roubado. Não existe soco entre jogadores normais. O soco funciona também na praça; poderes e sustos continuam proibidos lá. |
 | Invisibilidade | Não dá para começar um roubo nem ficar invisível carregando um Boo. |
 | Slap | O servidor valida e o cliente do alvo aplica o empurrão (ele é dono da física do próprio boneco). O efeito importante, soltar o Boo, é do servidor. |
 | Novatos | Na primeira sessão ninguém rouba a pessoa por 2 minutos, e ninguém rouba o último Boo de uma base. |
