@@ -681,6 +681,13 @@ function takeFromCarrier(taker: Player, carrier: Player)
 end
 BooService.takeFromCarrier = takeFromCarrier
 
+-- SÓ para testes no Studio (chamado pelo StudioGrant, que nem existe em produção)
+function BooService.studioCarry(player: Player, key: string)
+	if game:GetService("RunService"):IsStudio() and not carrying[player] then
+		attachCarry(player, key, 777000777, Config.Combat.GripBase)
+	end
+end
+
 -- Soco (tecla Q / botão Bater): derruba a pegada do ladrão mais perto
 function BooService.punch(attacker: Player)
 	local _, _, root = ctx.Net.alive(attacker)
@@ -724,7 +731,7 @@ function BooService.punch(attacker: Player)
 	local dir = (targetPos - from) * Vector3.new(1, 0, 1)
 	dir = dir.Magnitude > 0.01 and dir.Unit or Vector3.new(0, 0, 1)
 	ctx.fx("Punch", { position = targetPos + Vector3.new(0, 2, 0), by = attacker.UserId, grip = math.max(0, c.grip) })
-	ctx.fx("Knockback", { velocity = dir * cfg.knockback + Vector3.new(0, 12, 0) }, best)
+	ctx.fx("Knockback", { velocity = dir * cfg.knockback + Vector3.new(0, 6, 0) }, best)
 	if c.grip <= 0 then
 		BooService.dropCarried(best, "punched")
 		ctx.Character.set(best, "frozenUntil", Config.Combat.StunSeconds)

@@ -115,6 +115,14 @@ local function studioGrant(player: Player, kind, key)
 		if data then
 			ctx.Products.grant(player, data, key)
 		end
+	elseif kind == "Test" and ctx.Net.isString(key, 16) then
+		-- cenários de teste do StudioTests (só no Studio; o módulo só é carregado aqui)
+		task.spawn(function()
+			require(script.Parent.StudioTests).run(ctx, player, key)
+		end)
+	elseif kind == "Carry" and ctx.Net.isString(key) and Config.Boos[key] then
+		-- teste de combate com um jogador só: faz o jogador carregar um Boo "roubado" de um dono fictício
+		ctx.Boos.studioCarry(player, key)
 	end
 end
 
