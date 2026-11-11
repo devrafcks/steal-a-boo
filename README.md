@@ -351,7 +351,7 @@ Dois workflows em `.github/workflows`:
 | Workflow | Quando roda | O que faz |
 | --- | --- | --- |
 | `ci.yml` | Todo push e pull request | StyLua, Selene, teste do Config, simulação de balanceamento, `wally install` e `rojo build` (guarda o `.rbxl` como artefato) |
-| `deploy.yml` | Push na `main` que mude `src/`, o projeto Rojo ou os pacotes, ou manual | Repete as validações **exigindo todos os IDs de produtos e passes**, gera o place e publica via Open Cloud |
+| `deploy.yml` | Push na `main` que mude `src/`, o projeto Rojo ou os pacotes, ou manual | Repete as validações (IDs zerados viram aviso e a loja mostra "Em breve"), gera o place e publica via Open Cloud |
 
 Sem o secret abaixo o deploy só valida e gera o place, e avisa que **não publicou**.
 

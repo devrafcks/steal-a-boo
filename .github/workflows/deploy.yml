@@ -51,8 +51,14 @@ jobs:
           stylua --check src tests
           selene src
 
-      - name: Teste do Config (exige todos os IDs de produtos e passes preenchidos)
-        run: REQUIRE_IDS=1 lune run tests/config-check
+      - name: Teste do Config
+        # IDs zerados (item ainda não criado na Roblox) viram AVISO: a loja mostra "Em breve" e
+        # nunca chama a compra desse item. Para exigir todos os IDs, use REQUIRE_IDS=1.
+        run: |
+          lune run tests/config-check | tee config-check.txt
+          if grep -q "id = 0" config-check.txt; then
+            echo "::warning::Há produtos/passes com id = 0 no Config (aparecem como Em breve na loja). Veja o log deste passo."
+          fi
 
       - name: Instalar pacotes (Wally)
         run: wally install
