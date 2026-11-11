@@ -7,6 +7,9 @@
 	- Slots do térreo: 6 livres, 4 do passe ExtraSlots, 2 do passe VIP.
 	- Cofre: a renda dos Boos cai no cofre; pisar na esteira de coleta passa tudo para o Cash.
 	- Esteiras pagas 2x/3x/4x: o prompt abre a compra no cliente; quem entrega é o ProcessReceipt.
+	- Pedestal: cada Boo da base tem um pedestal evolutivo (tecla F perto do Boo).
+	- Segurança (Laboratório): ladrão demora mais para roubar e o portão fica trancado mais tempo.
+	- Coleta Automática (passe): o cofre passa sozinho para o Cash.
 	- Portão: começa ABERTO; o dono tranca por GateLockSeconds; depois fica aberto
 	  pelo menos GateOpenSeconds. Trancado = intrusos são expulsos e ninguém rouba.
 ]]
@@ -17,6 +20,7 @@ local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Config = require(Shared.Config)
 local BooModel = require(Shared.BooModel)
 local Format = require(Shared.Util.Format)
+local Rarity = require(Shared.Util.Rarity)
 
 local PlotService = {}
 
@@ -133,12 +137,22 @@ end
 ----------------------------------------------------------------------
 -- Prompts
 ----------------------------------------------------------------------
+-- Tempo para roubar = 0,8s + Segurança do dono (Laboratório)
+local function stealHoldFor(ownerId: number): number
+	local owner = Players:GetPlayerByUserId(ownerId or 0)
+	local data = owner and ctx.PlayerData.data(owner)
+	local level = data and ctx.Upgrades.securityLevel(data) or 0
+	return 0.8 + level * Config.Upgrades.StealHoldPerLevel
+end
+
 local function addStealPrompt(model: Model)
+	local hold = stealHoldFor(model:GetAttribute("OwnerUserId"))
+	model:SetAttribute("StealHold", hold) -- o cliente usa isso (o dono troca por "Guardar")
 	local p = Instance.new("ProximityPrompt")
 	p.Name = "StealPrompt"
 	p.ActionText = "Roubar"
 	p.ObjectText = model.Name
-	p.HoldDuration = 0.8
+	p.HoldDuration = hold
 	p.MaxActivationDistance = Config.World.StealRange
 	p.RequiresLineOfSight = false
 	p.Parent = model.PrimaryPart
@@ -147,9 +161,60 @@ local function addStealPrompt(model: Model)
 			ctx.Boos.onPlacedPrompt(player, model)
 		end
 	end)
+
+	-- Evoluir o pedestal (só o dono; tecla F para não brigar com o E de guardar/roubar)
+	if not model:GetAttribute("Decoy") then
+		local u = Instance.new("ProximityPrompt")
+		u.Name = "PedestalPrompt"
+		u.KeyboardKeyCode = Enum.KeyCode.F
+		u.ActionText = "Evoluir"
+		u.ObjectText = model.Name
+		u.HoldDuration = 0
+		u.MaxActivationDistance = 9
+		u.RequiresLineOfSight = false
+		u.UIOffset = Vector2.new(0, 70)
+		u.Enabled = false -- o cliente do dono liga localmente
+		u.Parent = model.PrimaryPart
+		u.Triggered:Connect(function(player)
+			if model:GetAttribute("OwnerUserId") == player.UserId and ctx.Net.allowPrompt(player, "Pedestal") then
+				ctx.Upgrades.buyPedestal(player, model:GetAttribute("SlotIndex"))
+			end
+		end)
+	end
 	return p
 end
 PlotService.addStealPrompt = addStealPrompt
+
+-- Atualiza o texto do Boo (nível, renda do pedestal), o custo no prompt F e o tempo de roubo
+local function refreshBooTexts(model: Model, data)
+	if model:GetAttribute("Decoy") or not model.PrimaryPart then
+		return
+	end
+	local slot = model:GetAttribute("SlotIndex")
+	local def = Config.Boos[model:GetAttribute("BooKey")]
+	if not def or not slot then
+		return
+	end
+	local level = ctx.Upgrades.pedestalLevel(data, slot)
+	local income = def.incomePerSec * ctx.Upgrades.pedestalMultiplier(level)
+	local gui = model.PrimaryPart:FindFirstChild("BooLabel")
+	local info = gui and gui:FindFirstChild("InfoLabel")
+	if info then
+		info.Text = string.format("%s • $%s/s • Nv %d", Rarity.label(def.rarity), Format.compact(income), level)
+	end
+	local pedestal = model.PrimaryPart:FindFirstChild("PedestalPrompt") :: ProximityPrompt?
+	if pedestal then
+		local cost = ctx.Upgrades.pedestalCost(data, slot)
+		pedestal.ActionText = cost and string.format("Evoluir Nv %d ($%s)", level, Format.compact(cost))
+			or "Nível máximo"
+	end
+	local hold = stealHoldFor(model:GetAttribute("OwnerUserId"))
+	model:SetAttribute("StealHold", hold)
+	local steal = model.PrimaryPart:FindFirstChild("StealPrompt") :: ProximityPrompt?
+	if steal then
+		steal.HoldDuration = hold
+	end
+end
 
 local function setupPad(plot: Model, pad: BasePart)
 	local p = pad:FindFirstChild("PlacePrompt") :: ProximityPrompt
@@ -174,6 +239,7 @@ end
 local lifts: { { plot: Model, pad: BasePart } } = {}
 local liftCooldown: { [Player]: number } = {}
 local liftWarned: { [Player]: number } = {}
+local lastAuto: { [Player]: number } = {}
 
 local function setupLift(plot: Model, pad: BasePart)
 	table.insert(lifts, { plot = plot, pad = pad })
@@ -211,6 +277,7 @@ end
 Players.PlayerRemoving:Connect(function(player)
 	liftCooldown[player] = nil
 	liftWarned[player] = nil
+	lastAuto[player] = nil
 end)
 
 ----------------------------------------------------------------------
@@ -408,8 +475,15 @@ function PlotService.renderFloors(player: Player)
 	updateRoof(plot, level)
 end
 
+-- Próximo andar com o custo já com a Promoção de Upgrades (se ativa)
 function PlotService.nextFloor(player: Player)
-	return P.Floors[PlotService.baseLevel(player) + 1]
+	local f = P.Floors[PlotService.baseLevel(player) + 1]
+	if not f then
+		return nil
+	end
+	local data = ctx.PlayerData.data(player)
+	local mult = data and ctx.Upgrades.discount(data) or 1
+	return { name = f.name, cost = math.floor(f.cost * mult) }
 end
 
 function PlotService.upgrade(player: Player)
@@ -418,16 +492,14 @@ function PlotService.upgrade(player: Player)
 		return
 	end
 	local level = PlotService.baseLevel(player)
-	local nextFloor = P.Floors[level + 1]
+	local nextFloor = PlotService.nextFloor(player)
 	if not nextFloor then
 		ctx.notify(player, "Sua base já está no máximo!", "info")
 		return
 	end
 	-- Dentro da própria base, o cofre é coletado antes de cobrar (o dinheiro dos Boos já conta)
-	local pos = ctx.Net.position(player)
-	if pos and PlotService.isInside(plotOf[player], pos) then
-		collect(player, plotOf[player])
-	end
+	PlotService.collectIfHome(player)
+	nextFloor = PlotService.nextFloor(player) :: any
 	if data.Cash < nextFloor.cost then
 		ctx.notify(
 			player,
@@ -506,6 +578,29 @@ function PlotService.renderSlots(player: Player)
 			addStealPrompt(m)
 			m.Parent = plot
 			models[i] = m
+		end
+	end
+	for _, m in pairs(models) do
+		refreshBooTexts(m, data)
+	end
+end
+
+function PlotService.refreshSlotLabel(player: Player, slot: number)
+	local plot = plotOf[player]
+	local data = ctx.PlayerData.data(player)
+	local m = plot and slotModels[plot] and slotModels[plot][slot]
+	if m and data then
+		refreshBooTexts(m, data)
+	end
+end
+
+-- Chamado quando os níveis do Laboratório mudam (Segurança muda o tempo de roubo)
+function PlotService.refreshOwner(player: Player)
+	local plot = plotOf[player]
+	local data = ctx.PlayerData.data(player)
+	if plot and data then
+		for _, m in pairs(slotModels[plot]) do
+			refreshBooTexts(m, data)
 		end
 	end
 end
@@ -662,14 +757,14 @@ function PlotService.toggleGate(player: Player)
 		ctx.notify(player, string.format("Portão recarregando: espere %ds.", math.ceil(g.nextLockAt - now)), "warn")
 		return
 	end
-	g.lockedUntil = now + Config.World.GateLockSeconds
+	local pdata = ctx.PlayerData.data(player)
+	local lockSeconds = Config.World.GateLockSeconds
+		+ (pdata and ctx.Upgrades.securityLevel(pdata) or 0) * Config.Upgrades.GateLockPerLevel
+	g.lockedUntil = now + lockSeconds
 	g.nextLockAt = g.lockedUntil + Config.World.GateOpenSeconds
-	plot:SetAttribute("LockEnds", Workspace:GetServerTimeNow() + Config.World.GateLockSeconds)
-	plot:SetAttribute(
-		"NextLockAt",
-		Workspace:GetServerTimeNow() + Config.World.GateLockSeconds + Config.World.GateOpenSeconds
-	)
-	ctx.notify(player, string.format("Base trancada por %ds!", Config.World.GateLockSeconds), "success")
+	plot:SetAttribute("LockEnds", Workspace:GetServerTimeNow() + lockSeconds)
+	plot:SetAttribute("NextLockAt", Workspace:GetServerTimeNow() + lockSeconds + Config.World.GateOpenSeconds)
+	ctx.notify(player, string.format("Base trancada por %ds!", lockSeconds), "success")
 	ctx.fx("GateLocked", { plotIndex = plot:GetAttribute("Index") })
 end
 
@@ -721,6 +816,15 @@ function collect(player: Player, plot: Model)
 	ctx.PlayerData.markDirty(player)
 end
 
+-- Dentro da própria base: passa o cofre para o Cash (usado antes de qualquer compra)
+function PlotService.collectIfHome(player: Player)
+	local plot = plotOf[player]
+	local pos = ctx.Net.position(player)
+	if plot and pos and PlotService.isInside(plot, pos) then
+		collect(player, plot)
+	end
+end
+
 local function tick()
 	local now = os.clock()
 	for plot, owner in pairs(ownerOfPlot) do
@@ -769,6 +873,14 @@ local function updateSigns()
 			)
 			setLabel(plot:FindFirstChild("CollectPad"), string.format("Cofre: $%s", Format.compact(data.Vault or 0)))
 			plot:SetAttribute("IncomePerSec", income)
+			-- passe Coleta Automática: o cofre passa sozinho, de onde o jogador estiver
+			if ctx.Passes.owns(owner, "AutoCollect") and (data.Vault or 0) >= 1 then
+				local now = os.clock()
+				if now - (lastAuto[owner] or 0) >= Config.Vault.AutoCollectSeconds then
+					lastAuto[owner] = now
+					collect(owner, plot)
+				end
+			end
 			local boostActive = (data.IncomeBoostEnds or 0) > os.time()
 			plot:SetAttribute("BoostMult", boostActive and data.IncomeBoostMult or 1)
 			plot:SetAttribute("BoostEnds", boostActive and data.IncomeBoostEnds or 0)
