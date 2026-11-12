@@ -91,8 +91,17 @@ No Studio, conecte o plugin do Rojo ao servidor. Para gerar o place:
 rojo build -o build/steal-a-boo.rbxl
 ```
 
+Os modelos 3D gratuitos do Creator Store ficam em `ServerStorage.ExternalAssets`, dentro do arquivo do place. Sem eles, o mapa usa versões feitas com primitivas.
+
 Para testar o save de verdade no Studio, ative *Enable Studio Access to API Services* em Game Settings > Security.
 Sem isso o jogo usa um save em memória.
+
+## Stack
+
+- [Rojo](https://rojo.space) para sincronizar `src/` com o Studio
+- [Wally](https://wally.run) para pacotes (ProfileStore)
+- Luau puro, sem assets externos de código
+- Status: MVP jogável
 
 ## Estrutura
 
