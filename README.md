@@ -18,6 +18,16 @@
   <img src="assets/screenshots/overview.png" alt="Visão geral do parque" width="860">
 </p>
 
+## Por que este jogo existe
+
+Este projeto é um **experimento pessoal**, feito para se divertir e para testar até onde dá para ir criando um jogo
+completo para Roblox com ajuda de IA. Foi desenvolvido de ponta a ponta em **web coding** (programação conduzida por
+prompts com assistente de IA), com **supervisão humana**: eu defini a ideia, as regras e o balanceamento, revisei o
+código gerado, testei no Studio e corrigi o que não ficou bom.
+
+Não é um produto comercial nem um jogo "sério". É um laboratório leve e divertido para praticar arquitetura
+servidor-autoritativa, economia de simulator, monetização e organização de código em Luau.
+
 ## O jogo
 
 Você chega num parque colorido. No centro fica a praça neutra com loja, estações de treino, baú diário,
@@ -81,15 +91,6 @@ No Studio, conecte o plugin do Rojo ao servidor. Para gerar o place:
 rojo build -o build/steal-a-boo.rbxl
 ```
 
-Qualidade de código:
-
-```bash
-selene src
-stylua --check src tests
-lune run tests/config-check
-node tools/balance/sim.js 100
-```
-
 Para testar o save de verdade no Studio, ative *Enable Studio Access to API Services* em Game Settings > Security.
 Sem isso o jogo usa um save em memória.
 
@@ -98,9 +99,6 @@ Sem isso o jogo usa um save em memória.
 ```
 default.project.json   mapeamento Rojo
 assets/                logo, capturas e CREDITS.md
-tests/                 teste do Config (Lune)
-tools/balance/         simulador de balanceamento
-.github/workflows/     CI e deploy
 src/
   shared/              Config, Remotes, BooModel, Types e utilidades
   server/              Data, Monetization e Systems (Plot, Boo, Combat, Rebirth, Shop...)
