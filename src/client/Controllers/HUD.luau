@@ -1,8 +1,3 @@
---[[
-	HUD.luau — Cash, Cash/s, Speed, Throw, Rebirths, sorte do servidor,
-	botões laterais (Loja, Bolsa, Daily, Rebirth, Ranking, Ajustes, Trancar),
-	hotbar de consumíveis (teclas 1..9) e aviso de "carregando Boo".
-]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -22,9 +17,6 @@ local HUD = {}
 
 local cooldownEnds: { [string]: number } = {}
 
-----------------------------------------------------------------------
--- Painel de status (topo esquerdo)
-----------------------------------------------------------------------
 local stats = UI.make("Frame", {
 	Name = "Stats",
 	BackgroundColor3 = T.Panel,
@@ -75,9 +67,6 @@ local statLine2 = UI.text(stats, {
 	MaxTextSize = 20,
 })
 
-----------------------------------------------------------------------
--- Banner de sorte do servidor e boosts (topo centro)
-----------------------------------------------------------------------
 local banner = UI.make("Frame", {
 	Name = "LuckBanner",
 	AnchorPoint = Vector2.new(0.5, 0),
@@ -116,9 +105,6 @@ UI.stroke(carryBanner, 3)
 local carryText =
 	UI.text(carryBanner, { Text = "", Size = UDim2.new(1, -16, 1, -8), Position = UDim2.fromOffset(8, 4) })
 
-----------------------------------------------------------------------
--- Botões laterais
-----------------------------------------------------------------------
 local side = UI.make("Frame", {
 	Name = "SideButtons",
 	BackgroundTransparency = 1,
@@ -176,7 +162,6 @@ sideButton(8, "⚙️ Ajustes", T.Grey, function()
 	UI.toggle("Settings")
 end)
 
--- Trancar base (direita)
 local lockButton, lockLabel = UI.button(UI.root, {
 	Name = "LockButton",
 	Text = "🔒 Trancar base",
@@ -190,7 +175,6 @@ local lockButton, lockLabel = UI.button(UI.root, {
 	end,
 })
 
--- Bater no ladrão (tecla Q): só faz algo se alguém estiver carregando um Boo roubado por perto
 UI.button(UI.root, {
 	Name = "PunchButton",
 	Text = "🥊 Bater (Q)",
@@ -204,9 +188,6 @@ UI.button(UI.root, {
 	end,
 })
 
-----------------------------------------------------------------------
--- Hotbar (teclas 1..9)
-----------------------------------------------------------------------
 local hotbar = UI.make("Frame", {
 	Name = "Hotbar",
 	BackgroundTransparency = 1,
@@ -307,12 +288,8 @@ function HUD.startCooldown(key: string, seconds: number)
 	end
 end
 
--- O ShopUI substitui esta função quando carrega
 function HUD.openShopTab(_tab: string) end
 
-----------------------------------------------------------------------
--- Atualização
-----------------------------------------------------------------------
 local function render(data)
 	cashLabel.Text = "$" .. Format.compact(data.Cash)
 	local boost = (data.IncomeBoostEnds or 0) > os.time() and string.format("  (%dx esteira!)", data.IncomeBoostMult)
@@ -333,7 +310,6 @@ end
 State.onReady(render)
 
 RunService.Heartbeat:Connect(function()
-	-- Banner de sorte
 	local luck = Workspace:GetAttribute("ServerLuck") or 1
 	local ends = Workspace:GetAttribute("ServerLuckEnds") or 0
 	local left = ends - Workspace:GetServerTimeNow()
@@ -349,14 +325,12 @@ RunService.Heartbeat:Connect(function()
 		banner.Visible = false
 	end
 
-	-- Carregando Boo
 	local carrying = player:GetAttribute("Carrying")
 	carryBanner.Visible = carrying ~= nil
 	if carrying then
 		carryText.Text = string.format("Carregando %s! Corra para a SUA base!", carrying)
 	end
 
-	-- Cooldowns da hotbar
 	local now = os.clock()
 	for key, s in pairs(slots) do
 		local e = cooldownEnds[key]
@@ -368,7 +342,6 @@ RunService.Heartbeat:Connect(function()
 		end
 	end
 
-	-- Botão de trancar
 	local idx = player:GetAttribute("PlotIndex")
 	local plots = Workspace:FindFirstChild("StealABooWorld") and Workspace.StealABooWorld:FindFirstChild("Plots")
 	local plot = idx and plots and plots:FindFirstChild("Plot_" .. idx)

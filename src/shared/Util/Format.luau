@@ -1,4 +1,3 @@
---[[ Format.luau — números compactos (1.2K, 3.4M) e tempo (mm:ss) ]]
 local Format = {}
 
 local SUFFIXES = { "", "K", "M", "B", "T", "Qa", "Qi" }

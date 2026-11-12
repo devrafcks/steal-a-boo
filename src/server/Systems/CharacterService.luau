@@ -1,12 +1,3 @@
---[[
-	CharacterService.luau — tudo que mexe no boneco, decidido SÓ no servidor.
-
-	WalkSpeed = BaseWalkSpeed + Speed (treino), limitado a MaxSpeed
-	  * Speed Rush: pelo menos Powers.SpeedRush.walkSpeed
-	  * carregando Boo roubado: * StealCarrySpeedPenalty
-	  * congelado: 0
-	Também cuida de: super pulo, invisibilidade, proteção ao nascer, tag/aura VIP.
-]]
 local Players = game:GetService("Players")
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
@@ -33,7 +24,6 @@ function CharacterService.set(player: Player, field: string, seconds: number)
 	CharacterService.refresh(player)
 end
 
--- só a proteção de quem acabou de nascer (a praça NÃO conta): usada para socar/tomar de ladrões
 function CharacterService.isSpawnSafe(player: Player): boolean
 	return state(player).safeUntil > os.clock()
 end
@@ -97,14 +87,13 @@ function CharacterService.refresh(player: Player)
 
 	local invis = s.invisUntil > now
 	if char:GetAttribute("Invisible") ~= invis then
-		char:SetAttribute("Invisible", invis) -- os outros clientes aplicam a transparência
+		char:SetAttribute("Invisible", invis)
 		hum.DisplayDistanceType = invis and Enum.HumanoidDisplayDistanceType.None
 			or Enum.HumanoidDisplayDistanceType.Viewer
 	end
 	char:SetAttribute("Safe", s.safeUntil > now)
 end
 
--- Tag VIP e aura (cosmético do passe)
 function CharacterService.applyCosmetics(player: Player)
 	local char = player.Character
 	local head = char and char:FindFirstChild("Head")
@@ -183,7 +172,6 @@ function CharacterService.init(c)
 		states[p] = nil
 	end)
 
-	-- Expira efeitos e reaplica velocidades
 	task.spawn(function()
 		while true do
 			task.wait(0.25)

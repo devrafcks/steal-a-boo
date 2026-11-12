@@ -1,7 +1,5 @@
 name: CI
 
-# Roda em todo push e pull request: formatação, lint, teste do Config, simulação de
-# balanceamento e build do place. Não publica nada (isso é o workflow "Deploy").
 on:
   push:
     branches: [main]

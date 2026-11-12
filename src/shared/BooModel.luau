@@ -1,11 +1,3 @@
---[[
-	BooModel.luau — monta o modelo visual de um Boo SÓ com primitivas do Studio.
-	Nenhum mesh/textura externo: corpo redondinho, olhões, bochechas e um acessório
-	diferente por Boo (Config.Boos[x].accessory). Raridade alta ganha luz e brilho.
-
-	O modelo é leve: 1 corpo + poucas peças soldadas, sem colisão.
-	O "balançar" fofo é feito no cliente (EffectsController) via tag "BooVisual".
-]]
 local CollectionService = game:GetService("CollectionService")
 
 local Config = require(script.Parent.Config)
@@ -38,7 +30,6 @@ local function part(props): BasePart
 	return p
 end
 
--- Solda `p` no corpo, numa posição relativa (offset em CFrame do corpo)
 local function attach(model: Model, body: BasePart, p: BasePart, offset: CFrame)
 	p.CFrame = body.CFrame * offset
 	local weld = Instance.new("WeldConstraint")
@@ -349,13 +340,6 @@ ACCESSORIES.Crown = function(model, body, s, _def)
 	end
 end
 
---[[
-	BooModel.build(booKey, opts)
-	opts.scale (number)   tamanho (padrão 1)
-	opts.anchored (bool)  corpo ancorado (zonas e slots) ou não (carregado)
-	opts.cframe (CFrame)  posição inicial
-	opts.decoy (bool)     visual de isca (um pouquinho transparente)
-]]
 function BooModel.build(booKey: string, opts): Model
 	opts = opts or {}
 	local def = Config.Boos[booKey]
@@ -377,7 +361,6 @@ function BooModel.build(booKey: string, opts): Model
 	body.Parent = model
 	model.PrimaryPart = body
 
-	-- Olhões (frente = -Z do corpo)
 	for side = -1, 1, 2 do
 		attach(
 			model,
@@ -442,7 +425,6 @@ function BooModel.build(booKey: string, opts): Model
 		acc(model, body, s, def)
 	end
 
-	-- Brilho por raridade
 	local tier = Rarity.tier(def.rarity)
 	if tier >= Rarity.tier("Epic") then
 		local glow = Instance.new("PointLight")
@@ -478,7 +460,6 @@ function BooModel.build(booKey: string, opts): Model
 	return model
 end
 
--- Billboard com nome, raridade e renda (usado em zonas e slots)
 function BooModel.addLabel(model: Model, extraText: string?)
 	local key = model:GetAttribute("BooKey")
 	local def = Config.Boos[key]

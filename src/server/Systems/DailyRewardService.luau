@@ -1,10 +1,3 @@
---[[
-	DailyRewardService.luau
-	- 1 claim por dia, pelo relógio UTC (dia = floor(os.time() / 86400)).
-	- Pegou ontem: sequência +1 (volta para 1 depois do dia StreakMax).
-	- Pulou um dia: sequência recomeça em 1.
-	- Dia 7: Cash + 1 Super Lucky Capture (LuckyTicket).
-]]
 local Workspace = game:GetService("Workspace")
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")

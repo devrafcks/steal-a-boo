@@ -1,13 +1,3 @@
---[[
-	StudioTests.luau — cenários de teste que rodam DENTRO do servidor real, só no Studio.
-
-	Só é carregado pelo StudioGrant (remote que nem existe em produção) e checa RunService:IsStudio()
-	de novo. Existe porque com um único jogador no Studio não dá para testar o combate: aqui criamos
-	"jogadores falsos" (bonecos simples) para socar e tomar o Boo, e imprimimos o resultado no Output
-	com o prefixo [StudioTests].
-
-	Cenários: "combat" (soco, nocaute, prioridade do dono) e "take" (tomar o Boo de volta).
-]]
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
@@ -17,7 +7,6 @@ local function say(text: string)
 	print("[StudioTests] " .. text)
 end
 
--- "Jogador" falso: só o necessário para as funções de combate (Character, UserId, nomes)
 local function mockPlayer(near: Vector3, userId: number, name: string)
 	local model = Instance.new("Model")
 	model.Name = name
@@ -41,7 +30,6 @@ end
 
 local FAKE_OWNER_ID = 777000777
 
--- leva o jogador para FORA da própria base (dentro dela, a entrega do roubo conclui na hora)
 local function stepOutside(player: Player)
 	player.Character:PivotTo(CFrame.new(Vector3.new(-90, 4, 45)))
 	task.wait(0.5)
@@ -80,7 +68,6 @@ function StudioTests.run(ctx, player: Player, scenario: string)
 			)
 		)
 		for i = 1, 3 do
-			-- o defensor acompanha o ladrão (o empurrão afasta um pouco)
 			puncher.Character.HumanoidRootPart.Position = player.Character.HumanoidRootPart.Position
 				+ Vector3.new(4, 0, 0)
 			Boos.punch(puncher)

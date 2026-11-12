@@ -1,13 +1,3 @@
-// Simulação de balanceamento: um jogador GRATUITO, ativo e esperto.
-// Lê os números direto do src/shared/Config.luau (Boos, zonas, andares, upgrades...).
-// Uso: node tools/balance/sim.js [horas=60] [--no-print-steps]
-//
-// Modelo (simplificado, serve para comparar versões do balance, não para prever tempo real):
-//  - a cada 40s tenta capturar um Boo na zona mais alta liberada (60% de sucesso: andar/errar)
-//  - mantém os melhores Boos nos slots; os piores vão para a venda (income x SellMultiplier)
-//  - a cada 10s compra a opção com melhor retorno (custo / ganho de renda) se o retorno for < 2h
-//  - treina Speed/Throw quando falta status para a próxima zona e o custo é < 30% do Cash
-//  - o cofre é coletado a cada passo (jogador ativo) e Rebirth não é feito (só medimos quando seria possível)
 const fs = require("fs");
 const path = require("path");
 
@@ -17,7 +7,6 @@ const num = (re, def) => {
 	return m ? Number(m[1]) : def;
 };
 
-// ---------- lê o Config ----------
 const E = {
 	start: num(/StartingCash = (\d+)/),
 	trainBase: num(/TrainingCashCostBase = (\d+)/),
@@ -63,7 +52,6 @@ const boos = [...src.matchAll(/(\w+) = \{\s*name = "\w+",\s*rarity = "(\w+)",\s*
 const zones = [...src.matchAll(/\{\s*name = "(\w+)",\s*label = "[^"]*",\s*minStat = (\d+)/g)].map((m) => ({ name: m[1], minStat: +m[2] }));
 if (!boos.length || !zones.length || floors.length < 2) throw new Error("não consegui ler o Config (boos/zonas/andares)");
 
-// ---------- simulação ----------
 const hours = Number(process.argv[2]) || 60;
 const STEP = 10;
 let seed = 12345;
@@ -115,7 +103,7 @@ function capture() {
 	if (s.slots.length < maxSlots()) {
 		s.slots.push({ boo: pick, ped: 1 });
 	} else {
-		// troca pelo pior se for melhor; senão vende
+
 		s.slots.sort((a, b) => a.boo.income - b.boo.income);
 		if (pick.income > s.slots[0].boo.income) {
 			s.cash += s.slots[0].boo.income * E.sell;
@@ -133,15 +121,15 @@ function options() {
 	const out = [];
 	const inc = incomeNow();
 	const base = s.slots.reduce((a, sl) => a + sl.boo.income, 0);
-	// andar
+
 	if (s.floor < floors.length) {
 		const avg = s.slots.length ? base / s.slots.length : 1;
 		out.push({ kind: "floor", cost: floors[s.floor], gain: floorSlots * avg * (1 + incomeTrack.per * s.incomeLevel) * 0.6 });
 	}
-	// pedestal no melhor slot que ainda evolui
+
 	const cand = s.slots.filter((sl) => sl.ped < ped.max).sort((a, b) => b.boo.income / (1 + ped.per * (b.ped - 1)) - a.boo.income / (1 + ped.per * (a.ped - 1)))[0];
 	if (cand) out.push({ kind: "ped", cost: ped.base * Math.pow(ped.growth, cand.ped - 1), gain: cand.boo.income * ped.per * (1 + incomeTrack.per * s.incomeLevel), cand });
-	// gerador
+
 	if (s.incomeLevel < incomeTrack.max) out.push({ kind: "income", cost: incomeTrack.base * Math.pow(incomeTrack.growth, s.incomeLevel), gain: base * incomeTrack.per });
 	return out.filter((o) => o.gain > 0).map((o) => ({ ...o, payback: o.cost / (o.gain || 1e-9) }));
 }
@@ -152,7 +140,7 @@ function spend() {
 	while (bought && guard++ < 50) {
 		bought = false;
 		const z = nextZone();
-		// treino
+
 		if (z && z.minStat > 0) {
 			const useSpeed = s.speed < E.maxSpeed && (s.throw >= E.maxThrow || trainCost(s.speedTrains) <= trainCost(s.throwTrains) || z.minStat <= E.maxSpeed);
 			const c = useSpeed ? trainCost(s.speedTrains) : trainCost(s.throwTrains);

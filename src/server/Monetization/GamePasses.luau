@@ -1,12 +1,3 @@
---[[
-	GamePasses.luau — checa e guarda em cache quem tem cada passe.
-
-	- No join: UserOwnsGamePassAsync (pcall) para cada passe com id > 0.
-	- PromptGamePassPurchaseFinished: NÃO confia só no `wasPurchased`; consulta a API de novo
-	  (com algumas tentativas). Se a API ainda não confirmar, o passe aparece no próximo join.
-	- ID 0 = passe ainda não criado: ninguém tem (exceto teste no Studio via StudioGrant).
-	- Atributo Pass_<Key> no Player para a UI mostrar "Comprado".
-]]
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -42,14 +33,13 @@ local function apply(player: Player, key: string)
 	owned[player] = owned[player] or {}
 	owned[player][key] = true
 	player:SetAttribute("Pass_" .. key, true)
-	-- Efeitos imediatos de alguns passes
+
 	ctx.Plots.renderSlots(player)
 	ctx.Character.applyCosmetics(player)
 	ctx.Character.refresh(player)
 	ctx.PlayerData.markDirty(player)
 end
 
--- Só no Studio (chamado pelo StudioGrant, que nem existe em produção)
 function GamePasses.studioGrant(player: Player, key: string)
 	if not RunService:IsStudio() or not Config.GamePasses[key] then
 		return
@@ -68,7 +58,7 @@ local function loadPlayer(player: Player)
 			any = true
 		end
 	end
-	-- A API pode responder depois do perfil/plot carregar: reaplica os efeitos
+
 	if any and player.Parent == Players then
 		ctx.Plots.renderSlots(player)
 		ctx.Character.applyCosmetics(player)
@@ -85,7 +75,7 @@ function GamePasses.init(c)
 	Players.PlayerRemoving:Connect(function(p)
 		owned[p] = nil
 	end)
-	-- Quando o perfil carrega, reaplica (slots/aura dependem dos passes)
+
 	ctx.PlayerData.Loaded:Connect(function(player)
 		task.defer(function()
 			ctx.Plots.renderSlots(player)

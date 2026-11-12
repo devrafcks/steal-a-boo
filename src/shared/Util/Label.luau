@@ -1,16 +1,7 @@
---[[
-	Label.luau — legenda de botões e pads do chão.
-
-	Fica numa "pílula" escura arredondada, FLUTUANDO bem acima do botão (lift em studs, padrão 6,5),
-	então o piso e a própria peça nunca cobrem o texto. Aparece só de perto (maxDistance)
-	para não poluir a tela. O BillboardGui se chama "Label" e o texto "Text" (o PlotService
-	troca esse texto em runtime, ex.: "Cofre: $1.2K").
-]]
 local Label = {}
 
 local BACK = Color3.fromRGB(32, 18, 58)
 
--- opts: width, height (px), lift (studs acima do centro da peça), color (texto e borda), maxDistance
 function Label.pill(parent: Instance, text: string, opts: { [string]: any }?): BillboardGui
 	local o = opts or {}
 	local accent: Color3 = o.color or Color3.new(1, 1, 1)
@@ -19,7 +10,7 @@ function Label.pill(parent: Instance, text: string, opts: { [string]: any }?): B
 	gui.Name = "Label"
 	gui.Size = UDim2.fromOffset(o.width or 200, o.height or 46)
 	gui.StudsOffsetWorldSpace = Vector3.new(0, o.lift or 6.5, 0)
-	gui.AlwaysOnTop = o.alwaysOnTop == true -- por padrão NÃO: a altura resolve, e assim muro e chão ainda escondem de longe
+	gui.AlwaysOnTop = o.alwaysOnTop == true
 	gui.MaxDistance = o.maxDistance or 42
 	gui.LightInfluence = 0
 

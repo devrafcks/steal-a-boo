@@ -1,13 +1,3 @@
---[[
-	EffectsController.luau — SÓ visual e som. Nada aqui muda o jogo.
-	O servidor manda ReplicateEffect(name, payload) depois de validar a ação.
-
-	- Boos balançando e girando de leve (tag "BooVisual"), carrossel e roda-gigante girando
-	- Personagens invisíveis (atributo Invisible) ficam quase transparentes para os outros
-	- Susto fofo de 1,5s (ou só um ícone, se "Reduzir sustos" estiver ligado)
-	- Partículas de captura, fumaça da isca, "PAF!" do slap, confete de compra
-	- Sons só tocam se o ID estiver preenchido em Config.Sounds (padrão 0 = silêncio)
-]]
 local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
@@ -30,13 +20,9 @@ local T = UI.Theme
 
 local Effects = {}
 
--- Som: módulo Sound (IDs licenciados em Config.Sounds)
 local Sound = require(script.Parent.Sound)
 Effects.play = Sound.play
 
-----------------------------------------------------------------------
--- Balanço dos Boos e giros (local)
-----------------------------------------------------------------------
 local bobbing: { [Model]: { base: CFrame, phase: number } } = {}
 local function track(model: Instance)
 	if not model:IsA("Model") then
@@ -94,7 +80,7 @@ RunService.RenderStepped:Connect(function()
 	for _, s in ipairs(spinners) do
 		if s.model.Parent then
 			local a = t * s.speed
-			-- gira em volta do eixo do MUNDO (Y ou Z), no centro do modelo
+
 			local rot = s.axis == "Z" and CFrame.Angles(0, 0, a) or CFrame.Angles(0, a, 0)
 			local center = CFrame.new(s.base.Position)
 			s.model:PivotTo(center * rot * center:Inverse() * s.base)
@@ -102,9 +88,6 @@ RunService.RenderStepped:Connect(function()
 	end
 end)
 
-----------------------------------------------------------------------
--- Invisibilidade dos outros
-----------------------------------------------------------------------
 RunService.Heartbeat:Connect(function()
 	for _, other in Players:GetPlayers() do
 		local char = other.Character
@@ -123,9 +106,6 @@ RunService.Heartbeat:Connect(function()
 	end
 end)
 
-----------------------------------------------------------------------
--- Partículas e textos no mundo
-----------------------------------------------------------------------
 local function burst(position: Vector3, color: Color3, count: number?, size: number?)
 	local p = Instance.new("Part")
 	p.Anchored = true
@@ -183,9 +163,6 @@ local function headPos(userId: number): Vector3?
 	return head and head.Position
 end
 
-----------------------------------------------------------------------
--- Popup central (raridade, rebirth...)
-----------------------------------------------------------------------
 local function bigPopup(title: string, subtitle: string, color: Color3)
 	local f = UI.make("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
@@ -222,9 +199,6 @@ local function bigPopup(title: string, subtitle: string, color: Color3)
 	end)
 end
 
-----------------------------------------------------------------------
--- Susto fofo (overlay desenhado com UI, sem imagens)
-----------------------------------------------------------------------
 local function cuteBooFace(parent: Instance)
 	local face = UI.make("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
@@ -319,7 +293,7 @@ local function scared(payload)
 	local cam = Workspace.CurrentCamera
 	if cam then
 		local base = cam.FieldOfView
-		local punch = math.min(payload.fovPunch or 6, 8) -- nunca exagera
+		local punch = math.min(payload.fovPunch or 6, 8)
 		cam.FieldOfView = base + punch
 		TweenService:Create(cam, TweenInfo.new(0.5, Enum.EasingStyle.Quad), { FieldOfView = base }):Play()
 	end
@@ -330,9 +304,6 @@ local function scared(payload)
 	end)
 end
 
-----------------------------------------------------------------------
--- Tutorial (4 toasts na primeira sessão)
-----------------------------------------------------------------------
 local TUTORIAL = {
 	"1/4 Treine Speed e Throw na praça (esteira e alvo).",
 	"2/4 Vá até a Feirinha (leste) e capture um Boo.",
@@ -340,9 +311,6 @@ local TUTORIAL = {
 	"4/4 Tranque o portão para defender ou roube Boos de bases abertas!",
 }
 
-----------------------------------------------------------------------
--- Handlers dos efeitos do servidor
-----------------------------------------------------------------------
 local HANDLERS = {}
 
 HANDLERS.Capture = function(p)
@@ -579,9 +547,6 @@ HANDLERS.Lift = function(p)
 	end
 end
 
-----------------------------------------------------------------------
--- Esteiras animadas (listras correndo) e moedas indo para o cofre
-----------------------------------------------------------------------
 local conveyors = {}
 local fxFolder = Instance.new("Folder")
 fxFolder.Name = "LocalFX"
@@ -665,7 +630,6 @@ RunService.RenderStepped:Connect(function()
 	end
 end)
 
--- Moedinhas correndo pela esteira de coleta das bases que têm renda
 task.spawn(function()
 	local world = Workspace:WaitForChild("StealABooWorld", 30)
 	if not world then
@@ -706,9 +670,6 @@ task.spawn(function()
 	end
 end)
 
-----------------------------------------------------------------------
--- Fogos de artifício no céu da feira
-----------------------------------------------------------------------
 local FIREWORK_COLORS = { T.Pink, T.Yellow, T.Cyan, T.Green, Color3.fromRGB(200, 140, 255) }
 
 local function firework(origin: Vector3)

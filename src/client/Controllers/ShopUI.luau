@@ -1,12 +1,3 @@
---[[
-	ShopUI.luau — loja com abas: Boosts, Poderes, Sustos, Cash, Passes.
-
-	- Lê o catálogo do servidor (GetShopCatalog), que vem 100% do Config.
-	- ID 0 = botão desabilitado. No Studio aparece "Configure o ID no Config" + botão
-	  "Testar grátis" (StudioGrant, que só existe no Studio). Em produção: "Em breve".
-	- ID preenchido = PromptProductPurchase / PromptGamePassPurchase. Quem ENTREGA é o
-	  servidor (ProcessReceipt / GamePasses). O cliente nunca concede nada.
-]]
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -184,7 +175,6 @@ function ShopUI.refresh()
 	end
 end
 
--- Compra direta de um Dev Product pela chave do Config (usado pelas esteiras pagas)
 function ShopUI.buyProduct(key: string)
 	local def = Config.Products[key]
 	if not def then
@@ -212,7 +202,6 @@ HUD.openShopTab = function(tab)
 	renderTab()
 end
 
--- Depois de comprar um passe, o servidor revalida e a loja atualiza o "Comprado"
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(_, _, purchased)
 	if purchased then
 		task.delay(3, ShopUI.refresh)

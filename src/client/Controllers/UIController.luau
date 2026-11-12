@@ -1,8 +1,3 @@
---[[
-	UIController.luau — kit de UI: ScreenGui raiz, escala responsiva (celular e PC),
-	botões grandes com "squash", painéis modais, toasts e confirmação.
-	Toda a UI é criada por código (sem imagens externas).
-]]
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
@@ -95,7 +90,6 @@ function UI.text(parent: Instance, props)
 	return t
 end
 
--- Efeito "squash" ao clicar
 function UI.squash(gui: GuiObject)
 	local scale = gui:FindFirstChild("SquashScale") or UI.make("UIScale", { Name = "SquashScale", Parent = gui })
 	scale.Scale = 0.88
@@ -154,9 +148,6 @@ function UI.setDisabled(button: GuiButton, disabled: boolean, color: Color3?)
 	end
 end
 
-----------------------------------------------------------------------
--- Raiz e escala
-----------------------------------------------------------------------
 UI.root = UI.make("ScreenGui", {
 	Name = "StealABooUI",
 	ResetOnSpawn = false,
@@ -178,7 +169,6 @@ end
 updateScale()
 Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateScale)
 
--- Camada para modais (por cima do HUD)
 UI.modalLayer = UI.make(
 	"Frame",
 	{ Name = "Modals", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 50, Parent = UI.root }
@@ -188,9 +178,6 @@ UI.overlay = UI.make(
 	{ Name = "Overlay", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 90, Parent = UI.root }
 )
 
-----------------------------------------------------------------------
--- Painéis modais (um aberto por vez)
-----------------------------------------------------------------------
 local panels: { [string]: { frame: Frame, onOpen: (() -> ())? } } = {}
 local openName: string? = nil
 
@@ -278,9 +265,6 @@ function UI.isOpen(name: string): boolean
 	return openName == name
 end
 
-----------------------------------------------------------------------
--- Toasts
-----------------------------------------------------------------------
 local toastHolder = UI.make("Frame", {
 	Name = "Toasts",
 	AnchorPoint = Vector2.new(0.5, 0),
@@ -299,7 +283,6 @@ UI.make("UIListLayout", {
 local toastCount = 0
 
 local function sanitize(text: string): string
-	-- remove marcação RichText vinda de nomes de jogadores
 	return (tostring(text):gsub("<", "‹"):gsub(">", "›"))
 end
 
@@ -345,9 +328,6 @@ function UI.toast(text: string, kind: string?)
 	end)
 end
 
-----------------------------------------------------------------------
--- Confirmação simples
-----------------------------------------------------------------------
 local confirmFrame, confirmBody = UI.panel("Confirm", "Tem certeza?", UDim2.fromOffset(460, 240))
 local confirmText = UI.text(confirmBody, { Text = "", Size = UDim2.new(1, 0, 0, 80), MaxTextSize = 24, ZIndex = 52 })
 local confirmCallback = nil

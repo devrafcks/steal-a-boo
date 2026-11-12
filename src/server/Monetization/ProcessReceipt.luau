@@ -1,17 +1,3 @@
---[[
-	ProcessReceipt.luau — o ÚNICO lugar do jogo que define MarketplaceService.ProcessReceipt.
-	Doc oficial: https://create.roblox.com/docs/production/monetization/developer-products
-
-	Fluxo:
-	1. Jogador não está no servidor            -> NotProcessedYet (Roblox tenta de novo depois)
-	2. Perfil não carregou / sessão inativa    -> NotProcessedYet
-	3. ProductId não existe no Config (ou é 0) -> NotProcessedYet + log (nunca entrega desconhecido)
-	4. PurchaseId já entregue                  -> PurchaseGranted (idempotente, não dá 2x)
-	5. Entrega + grava PurchaseId no perfil no mesmo passo; erro -> NotProcessedYet
-	6. Pede save imediato e espera o DataStore confirmar (padrão recomendado pelo ProfileStore)
-	   Confirmou -> PurchaseGranted. Não confirmou a tempo -> NotProcessedYet
-	   (a Roblox reenvia; o PurchaseId no perfil impede entregar de novo).
-]]
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 
@@ -59,7 +45,6 @@ local function process(receiptInfo)
 		ReceiptStore.record(data, purchaseId)
 	end
 
-	-- Espera o save confirmar (ProfileStore atualiza LastSavedData depois de gravar)
 	if profile.Save then
 		profile:Save()
 	end

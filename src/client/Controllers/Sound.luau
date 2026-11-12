@@ -1,7 +1,3 @@
---[[
-	Sound.luau — toca os efeitos sonoros e a música (IDs em Config.Sounds).
-	ID 0 = silêncio. Sons longos são cortados em Config.SoundTrim.
-]]
 local SoundService = game:GetService("SoundService")
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
@@ -35,7 +31,6 @@ local function template(key: string): Sound?
 	return s
 end
 
--- Pré-carrega (evita o primeiro som atrasado)
 task.defer(function()
 	for key in pairs(Config.Sounds) do
 		template(key)
@@ -58,7 +53,6 @@ function Sound.play(key: string, volumeMul: number?, pitch: number?)
 	end)
 end
 
--- Música de fundo (volume ajustável em Ajustes)
 local music = template("Music")
 if music then
 	music.Looped = true

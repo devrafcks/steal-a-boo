@@ -1,4 +1,3 @@
---[[ Rarity.luau — sorteio de Boos com peso por zona e sorte ]]
 local Config = require(script.Parent.Parent.Config)
 
 local Rarity = {}
@@ -23,7 +22,6 @@ function Rarity.booTier(booKey: string): number
 	return def and Rarity.tier(def.rarity) or 0
 end
 
--- Lista de Boos de uma zona, ordenada por raridade (determinística)
 local poolCache = {}
 function Rarity.pool(zoneName: string): { string }
 	if poolCache[zoneName] then
@@ -46,7 +44,6 @@ function Rarity.pool(zoneName: string): { string }
 	return list
 end
 
--- Sorteia um Boo da zona. luck >= 1 multiplica o peso de Rare+ (Config.LuckAffectsFromTier).
 function Rarity.roll(zoneName: string, luck: number, rng: Random?): string?
 	local pool = Rarity.pool(zoneName)
 	local total = 0
@@ -73,7 +70,6 @@ function Rarity.roll(zoneName: string, luck: number, rng: Random?): string?
 	return pool[#pool]
 end
 
--- Fica com o melhor dos dois (por tier, depois por renda)
 function Rarity.better(a: string?, b: string?): string?
 	if not a then
 		return b

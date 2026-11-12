@@ -1,12 +1,5 @@
 --!nocheck
---[[
-	Teste do Config.luau (roda com Lune, sem Roblox Studio):  lune run tests/config-check
 
-	Procura erros que só apareceriam no jogo rodando: Boo apontando para zona que não existe,
-	andar mais barato que o anterior, produto sem nome, ID repetido, consumível inexistente...
-	IDs zerados (item ainda não criado na Roblox) viram AVISO; com REQUIRE_IDS=1 viram erro
-	(o deploy usa isso para não publicar uma loja com botões "Em breve").
-]]
 local fs = require("@lune/fs")
 local luau = require("@lune/luau")
 local process = require("@lune/process")
@@ -20,7 +13,6 @@ local function warnMsg(msg: string)
 	table.insert(warnings, msg)
 end
 
--- Carrega o Config com stubs dos tipos da Roblox
 local source = fs.readFile("src/shared/Config.luau")
 local chunk = luau.load(source, {
 	debugName = "Config.luau",
@@ -47,7 +39,6 @@ local function count(t): number
 	return n
 end
 
--- ---------- Boos ----------
 local booModel = fs.readFile("src/shared/BooModel.luau")
 local zoneNames = {}
 for _, z in ipairs(Config.Zones) do
@@ -87,7 +78,6 @@ if not Config.Boos[Config.Economy.StarterBoo] then
 	fail("StarterBoo não existe em Boos")
 end
 
--- Zonas precisam ficar mais caras (stat) e os Boos mais valiosos quanto mais longe
 do
 	local ordered = table.clone(Config.Zones)
 	table.sort(ordered, function(a, b)
@@ -108,7 +98,6 @@ do
 	end
 end
 
--- ---------- Andares ----------
 do
 	local P = Config.Plot
 	if P.Floors[1].cost ~= 0 then
@@ -128,7 +117,6 @@ do
 	end
 end
 
--- ---------- Upgrades ----------
 do
 	local U = Config.Upgrades
 	if #U.Order ~= 4 then
@@ -153,12 +141,10 @@ do
 	end
 end
 
--- ---------- Daily ----------
 if #Config.Daily.Rewards ~= Config.Daily.StreakMax then
 	fail("Daily.Rewards tem " .. #Config.Daily.Rewards .. " valores, StreakMax = " .. Config.Daily.StreakMax)
 end
 
--- ---------- Loja ----------
 local consumableKeys = {}
 for _, c in ipairs(Config.Consumables) do
 	consumableKeys[c.key] = true
@@ -248,7 +234,6 @@ if Config.GamePasses.AutoCollect == nil then
 	fail("falta o passe AutoCollect (Coleta Automática)")
 end
 
--- ---------- Resultado ----------
 print(
 	("Config OK? %d Boos, %d zonas, %d andares, %d produtos, %d passes"):format(
 		count(Config.Boos),

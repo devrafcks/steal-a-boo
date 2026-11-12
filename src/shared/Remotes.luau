@@ -1,48 +1,39 @@
---[[
-	Remotes.luau — lista nomeada de todos os remotes.
-	O SERVIDOR cria tudo (ver server/Systems/AntiExploit.luau). O cliente só espera e usa.
-	Não existe nenhum remote do tipo "GiveCash": o cliente só PEDE ações; o servidor valida.
-]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Remotes = {}
 
 Remotes.FolderName = "Remotes"
 
--- Cliente -> Servidor (RemoteEvent, todos com rate limit)
 Remotes.ClientEvents = {
-	"RequestCapture", -- (booModel) captura um Boo da zona
-	"RequestPlaceBoo", -- (booKey, slotIndex?) coloca do inventário na base
-	"RequestStoreBoo", -- (slotIndex) guarda um Boo da base no inventário
-	"RequestSellBoo", -- (booKey) vende um Boo do inventário
-	"RequestSteal", -- (booModel) rouba um Boo de outra base
-	"RequestTrain", -- ("Speed" | "Throw")
-	"RequestRebirth", -- ()
-	"RequestDaily", -- ()
-	"RequestCarousel", -- () compra Boo surpresa com Cash
-	"RequestUsePower", -- (powerKey)
-	"RequestUseScare", -- (scareKey)
-	"ToggleBaseGate", -- () tranca o portão da própria base
-	"RequestUpgradeBase", -- () constrói o próximo andar da base
-	"RequestUpgradeTrack", -- (trilha) evolui Gerador/Cofre/Sorte/Segurança
-	"RequestUpgradePedestal", -- (slotIndex) evolui o pedestal de um slot
-	"RequestPunch", -- () soca o ladrão mais perto
-	"UpdateSettings", -- ({ReduceScares, MusicVolume})
+	"RequestCapture",
+	"RequestPlaceBoo",
+	"RequestStoreBoo",
+	"RequestSellBoo",
+	"RequestSteal",
+	"RequestTrain",
+	"RequestRebirth",
+	"RequestDaily",
+	"RequestCarousel",
+	"RequestUsePower",
+	"RequestUseScare",
+	"ToggleBaseGate",
+	"RequestUpgradeBase",
+	"RequestUpgradeTrack",
+	"RequestUpgradePedestal",
+	"RequestPunch",
+	"UpdateSettings",
 }
 
--- Servidor -> Cliente (RemoteEvent)
 Remotes.ServerEvents = {
-	"ReplicateEffect", -- (effectName, payload) efeito visual já autorizado
-	"DataUpdated", -- (snapshot) snapshot leve para o HUD
-	"Notify", -- (text, kind) toast
+	"ReplicateEffect",
+	"DataUpdated",
+	"Notify",
 }
 
--- RemoteFunctions
 Remotes.Functions = {
 	"GetShopCatalog",
 }
 
--- Só existe dentro do Studio (o servidor nem cria em produção)
 Remotes.StudioOnly = {
 	"StudioGrant",
 }

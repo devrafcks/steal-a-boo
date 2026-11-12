@@ -1,13 +1,3 @@
---[[
-	InputController.luau
-	- Teclas 1..9 usam os consumíveis da hotbar. B = Bolsa, L = Loja.
-	- Ajusta prompts LOCALMENTE (só muda o que este cliente vê):
-	    Boo da sua base -> "Guardar"; Boo dos outros -> "Roubar"
-	    "Colocar Boo" só aparece nos slots livres da SUA base
-	    "Trancar base" só aparece na SUA base
-	  O servidor confere tudo de novo quando o prompt dispara.
-	- Prompt da loja física abre a UI da loja.
-]]
 local Players = game:GetService("Players")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local UserInputService = game:GetService("UserInputService")
@@ -79,11 +69,11 @@ local function updatePrompts()
 					else
 						sp.Enabled = true
 						sp.ActionText = "Roubar"
-						-- o servidor define o tempo (Segurança do dono do Boo)
+
 						sp.HoldDuration = child:GetAttribute("StealHold") or 0.8
 					end
 				end
-				-- evoluir pedestal (F): só no meu Boo
+
 				local pp = child.PrimaryPart:FindFirstChild("PedestalPrompt")
 				if pp then
 					pp.Enabled = child:GetAttribute("OwnerUserId") == player.UserId
@@ -93,7 +83,6 @@ local function updatePrompts()
 	end
 end
 
--- Prompt "Tomar o Boo" no ladrão: aparece para todos, menos para o próprio ladrão
 local function updateTakePrompts()
 	for _, other in Players:GetPlayers() do
 		local carried = other.Character and other.Character:FindFirstChild("CarriedBoo")

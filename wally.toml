@@ -4,6 +4,5 @@ version = "0.1.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
-# ProfileStore é só de servidor -> vai para ServerPackages (nunca replica no cliente)
 [server-dependencies]
 ProfileStore = "lm-loleris/profilestore@1.0.3"

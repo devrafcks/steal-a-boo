@@ -1,9 +1,3 @@
---[[
-	init.server.luau — bootstrap do servidor de Steal a Boo!
-
-	Ordem: mapa -> remotes -> dados -> sistemas -> monetização.
-	Todos os serviços recebem o mesmo `ctx` (sem requires circulares).
-]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -60,7 +54,6 @@ local ctx = {
 	Format = Format,
 }
 
--- Toast para um jogador. kind: info | success | warn | danger | rare
 function ctx.notify(player: Player, text: string, kind: string?)
 	if player and player.Parent == Players then
 		NotifyRemote:FireClient(player, text, kind or "info")
@@ -71,7 +64,6 @@ function ctx.notifyAll(text: string, kind: string?)
 	NotifyRemote:FireAllClients(text, kind or "info")
 end
 
--- Efeito visual JÁ autorizado pelo servidor. target nil = todo mundo.
 function ctx.fx(name: string, payload, target: Player?)
 	if target then
 		if target.Parent == Players then
@@ -82,9 +74,6 @@ function ctx.fx(name: string, payload, target: Player?)
 	end
 end
 
-----------------------------------------------------------------------
--- Snapshot leve para o HUD
-----------------------------------------------------------------------
 local function buildSnapshot(player: Player, data)
 	local passes = {}
 	for key in pairs(Config.GamePasses) do
@@ -134,9 +123,6 @@ local function buildSnapshot(player: Player, data)
 end
 PlayerData.setSnapshot(buildSnapshot, DataUpdatedRemote)
 
-----------------------------------------------------------------------
--- Inicialização dos serviços
-----------------------------------------------------------------------
 GamePasses.init(ctx)
 Products.init(ctx)
 CharacterService.init(ctx)
@@ -150,9 +136,8 @@ ShopService.init(ctx)
 UpgradeService.init(ctx)
 Leaderboards.init(ctx)
 ProcessReceipt.init(ctx)
-PlayerData.init() -- por último: o Loaded dispara depois que todos já escutam
+PlayerData.init()
 
--- Settings do jogador (só tipos válidos)
 AntiExploit.on("UpdateSettings", function(player, settings)
 	local data = PlayerData.data(player)
 	if not data or type(settings) ~= "table" then
@@ -167,7 +152,6 @@ AntiExploit.on("UpdateSettings", function(player, settings)
 	PlayerData.markDirty(player)
 end)
 
--- leaderstats (lista de jogadores do Roblox) + tutorial na 1ª sessão
 PlayerData.Loaded:Connect(function(player, profile)
 	local stats = Instance.new("Folder")
 	stats.Name = "leaderstats"

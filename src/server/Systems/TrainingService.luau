@@ -1,8 +1,3 @@
---[[
-	TrainingService.luau — esteira (Speed) e alvo (Throw Power) na praça.
-	Custo cresce: TrainingCashCostBase * TrainingCostGrowth ^ (treinos feitos naquele status).
-	2x Training (passe) dobra o ganho, não o custo.
-]]
 local Workspace = game:GetService("Workspace")
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
@@ -30,7 +25,6 @@ function TrainingService.cost(data, stat: string): number
 	return math.floor(E.TrainingCashCostBase * E.TrainingCostGrowth ^ data[s.trains])
 end
 
--- Speed é somado ao WalkSpeed base, então o máximo do STATUS é MaxSpeed - BaseWalkSpeed
 local function statCap(stat: string): number
 	if stat == "Speed" then
 		return Config.Economy.MaxSpeed - Config.Economy.BaseWalkSpeed

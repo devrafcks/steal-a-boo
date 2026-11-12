@@ -1,7 +1,3 @@
---[[
-	init.client.luau — bootstrap do cliente de Steal a Boo!
-	O cliente só desenha UI, efeitos e manda PEDIDOS ao servidor.
-]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")

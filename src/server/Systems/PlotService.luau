@@ -1,18 +1,3 @@
---[[
-	PlotService.luau — bases dos jogadores.
-
-	- Atribui um plot livre no join e libera no leave (se lotar, o jogador entra numa fila).
-	- Andares: térreo + até 3 andares comprados com Cash (Config.Plot.Floors). Cada andar
-	  tem 8 slots e elevadores (pads "Subir" / "Descer").
-	- Slots do térreo: 6 livres, 4 do passe ExtraSlots, 2 do passe VIP.
-	- Cofre: a renda dos Boos cai no cofre; pisar na esteira de coleta passa tudo para o Cash.
-	- Esteiras pagas 2x/3x/4x: o prompt abre a compra no cliente; quem entrega é o ProcessReceipt.
-	- Pedestal: cada Boo da base tem um pedestal evolutivo (tecla F perto do Boo).
-	- Segurança (Laboratório): ladrão demora mais para roubar e o portão fica trancado mais tempo.
-	- Coleta Automática (passe): o cofre passa sozinho para o Cash.
-	- Portão: começa ABERTO; o dono tranca por GateLockSeconds; depois fica aberto
-	  pelo menos GateOpenSeconds. Trancado = intrusos são expulsos e ninguém rouba.
-]]
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 
@@ -39,16 +24,13 @@ local OPEN_COLOR = Color3.fromRGB(255, 70, 70)
 local P = Config.Plot
 local M = Config.Materials
 
-local updateGateVisual -- definido mais abaixo
-local collect -- definido mais abaixo
+local updateGateVisual
+local collect
 
 local function newGateState()
 	return { lockedUntil = 0, nextLockAt = 0, alarmUntil = 0, lastAlarm = 0, lastEject = {} }
 end
 
-----------------------------------------------------------------------
--- Consultas
-----------------------------------------------------------------------
 function PlotService.getPlot(player: Player): Model?
 	return plotOf[player]
 end
@@ -89,7 +71,6 @@ function PlotService.baseLevel(player: Player): number
 	return data and math.clamp(data.BaseLevel or 1, 1, #P.Floors) or 1
 end
 
--- Slot i liberado para esse jogador?
 function PlotService.isUnlocked(player: Player, i: number): boolean
 	if i < 1 or i > P.MaxSlots then
 		return false
@@ -135,10 +116,6 @@ local function plotCF(plot: Model): CFrame
 	return (plot.Floor :: BasePart).CFrame * CFrame.new(0, -0.5, 0)
 end
 
-----------------------------------------------------------------------
--- Prompts
-----------------------------------------------------------------------
--- Tempo para roubar = 0,8s + Segurança do dono (Laboratório)
 local function stealHoldFor(ownerId: number): number
 	local owner = Players:GetPlayerByUserId(ownerId or 0)
 	local data = owner and ctx.PlayerData.data(owner)
@@ -148,7 +125,7 @@ end
 
 local function addStealPrompt(model: Model)
 	local hold = stealHoldFor(model:GetAttribute("OwnerUserId"))
-	model:SetAttribute("StealHold", hold) -- o cliente usa isso (o dono troca por "Guardar")
+	model:SetAttribute("StealHold", hold)
 	local p = Instance.new("ProximityPrompt")
 	p.Name = "StealPrompt"
 	p.ActionText = "Roubar"
@@ -163,7 +140,6 @@ local function addStealPrompt(model: Model)
 		end
 	end)
 
-	-- Evoluir o pedestal (só o dono; tecla F para não brigar com o E de guardar/roubar)
 	if not model:GetAttribute("Decoy") then
 		local u = Instance.new("ProximityPrompt")
 		u.Name = "PedestalPrompt"
@@ -174,7 +150,7 @@ local function addStealPrompt(model: Model)
 		u.MaxActivationDistance = 9
 		u.RequiresLineOfSight = false
 		u.UIOffset = Vector2.new(0, 70)
-		u.Enabled = false -- o cliente do dono liga localmente
+		u.Enabled = false
 		u.Parent = model.PrimaryPart
 		u.Triggered:Connect(function(player)
 			if model:GetAttribute("OwnerUserId") == player.UserId and ctx.Net.allowPrompt(player, "Pedestal") then
@@ -186,7 +162,6 @@ local function addStealPrompt(model: Model)
 end
 PlotService.addStealPrompt = addStealPrompt
 
--- Atualiza o texto do Boo (nível, renda do pedestal), o custo no prompt F e o tempo de roubo
 local function refreshBooTexts(model: Model, data)
 	if model:GetAttribute("Decoy") or not model.PrimaryPart then
 		return
@@ -226,7 +201,7 @@ local function setupPad(plot: Model, pad: BasePart)
 		p.ObjectText = "Slot " .. pad:GetAttribute("SlotIndex")
 		p.MaxActivationDistance = 8
 		p.RequiresLineOfSight = false
-		p.Enabled = false -- o cliente do dono liga localmente
+		p.Enabled = false
 		p.Parent = pad
 	end
 	p.Triggered:Connect(function(player)
@@ -236,7 +211,6 @@ local function setupPad(plot: Model, pad: BasePart)
 	end)
 end
 
--- Elevadores: pisar no pad leva ao andar alvo (sem tecla, não disputa o E com os slots)
 local lifts: { { plot: Model, pad: BasePart } } = {}
 local liftCooldown: { [Player]: number } = {}
 local liftWarned: { [Player]: number } = {}
@@ -281,9 +255,6 @@ Players.PlayerRemoving:Connect(function(player)
 	lastAuto[player] = nil
 end)
 
-----------------------------------------------------------------------
--- Andares (construídos conforme o BaseLevel do dono)
-----------------------------------------------------------------------
 local function mk(className: string, props, parent: Instance)
 	local inst = Instance.new(className)
 	if inst:IsA("BasePart") then
@@ -385,7 +356,6 @@ local function buildFloor(plot: Model, f: number)
 		Text = P.Floors[f].name,
 	}, gui)
 
-	-- 8 slots do andar
 	local i = P.GroundSlots + (f - 2) * P.FloorSlots + 1
 	for _, z in ipairs({ 4, 12 }) do
 		for _, x in ipairs({ -15, -5, 5, 15 }) do
@@ -404,7 +374,6 @@ local function buildFloor(plot: Model, f: number)
 		end
 	end
 
-	-- Elevadores: descer volta ao térreo, subir vai ao próximo andar (se existir)
 	setupLift(plot, liftPad(floorModel, cf * CFrame.new(-19, h + 0.7, 19), false, "GroundLanding"))
 	setupLift(plot, liftPad(floorModel, cf * CFrame.new(-11, h + 0.7, 19), true, "Level_" .. (f + 1) .. "Landing"))
 	mk("Part", {
@@ -424,7 +393,7 @@ local function updateRoof(plot: Model, level: number)
 		old:Destroy()
 	end
 	if level <= 1 then
-		return -- o térreo fica aberto (dá para ver os Boos de cima)
+		return
 	end
 	local cf = plotCF(plot)
 	local h = level * P.FloorHeight
@@ -466,7 +435,6 @@ function PlotService.renderFloors(player: Player)
 	updateRoof(plot, level)
 end
 
--- Próximo andar com o custo já com a Promoção de Upgrades (se ativa)
 function PlotService.nextFloor(player: Player)
 	local f = P.Floors[PlotService.baseLevel(player) + 1]
 	if not f then
@@ -488,7 +456,7 @@ function PlotService.upgrade(player: Player)
 		ctx.notify(player, "Sua base já está no máximo!", "info")
 		return
 	end
-	-- Dentro da própria base, o cofre é coletado antes de cobrar (o dinheiro dos Boos já conta)
+
 	PlotService.collectIfHome(player)
 	nextFloor = PlotService.nextFloor(player) :: any
 	if data.Cash < nextFloor.cost then
@@ -511,16 +479,12 @@ function PlotService.upgrade(player: Player)
 	ctx.PlayerData.markDirty(player)
 end
 
-----------------------------------------------------------------------
--- Desenho dos slots
-----------------------------------------------------------------------
 local function bodyCFrameFor(plot: Model, pad: BasePart): CFrame
 	local pos = pad.Position + Vector3.new(0, 1.9, 0)
 	local look = (plot.Floor :: BasePart).CFrame.LookVector
 	return CFrame.lookAt(pos, pos + look)
 end
 
--- Boos em slots que não estão liberados voltam para a bolsa (ex.: passe removido)
 local function migrateLocked(player: Player, data): boolean
 	local moved = false
 	for slot, key in pairs(data.PlotLayout) do
@@ -585,7 +549,6 @@ function PlotService.refreshSlotLabel(player: Player, slot: number)
 	end
 end
 
--- Chamado quando os níveis do Laboratório mudam (Segurança muda o tempo de roubo)
 function PlotService.refreshOwner(player: Player)
 	local plot = plotOf[player]
 	local data = ctx.PlayerData.data(player)
@@ -626,9 +589,6 @@ local function clearPlot(plot: Model)
 	plot:SetAttribute("IncomePerSec", 0)
 end
 
-----------------------------------------------------------------------
--- Atribuição
-----------------------------------------------------------------------
 local function setLabel(part: Instance?, text: string)
 	local label = part and part:FindFirstChild("Label")
 	local t = label and label:FindFirstChild("Text")
@@ -724,9 +684,6 @@ local function release(player: Player)
 	end
 end
 
-----------------------------------------------------------------------
--- Portão, alarme e cofre
-----------------------------------------------------------------------
 function PlotService.toggleGate(player: Player)
 	local plot = plotOf[player]
 	if not plot then
@@ -807,7 +764,6 @@ function collect(player: Player, plot: Model)
 	ctx.PlayerData.markDirty(player)
 end
 
--- Dentro da própria base: passa o cofre para o Cash (usado antes de qualquer compra)
 function PlotService.collectIfHome(player: Player)
 	local plot = plotOf[player]
 	local pos = ctx.Net.position(player)
@@ -823,7 +779,6 @@ local function tick()
 		local locked = g.lockedUntil > now
 		updateGateVisual(plot, locked)
 
-		-- Esteira de coleta: o dono pisou perto do coletor
 		local ownerPos = ctx.Net.position(owner)
 		local pad = plot:FindFirstChild("CollectPad") :: BasePart
 		if ownerPos and pad and (ownerPos - pad.Position).Magnitude <= Config.Vault.CollectRadius + 2 then
@@ -864,7 +819,7 @@ local function updateSigns()
 			)
 			setLabel(plot:FindFirstChild("CollectPad"), string.format("Cofre: $%s", Format.compact(data.Vault or 0)))
 			plot:SetAttribute("IncomePerSec", income)
-			-- passe Coleta Automática: o cofre passa sozinho, de onde o jogador estiver
+
 			if ctx.Passes.owns(owner, "AutoCollect") and (data.Vault or 0) >= 1 then
 				local now = os.clock()
 				if now - (lastAuto[owner] or 0) >= Config.Vault.AutoCollectSeconds then
@@ -878,8 +833,6 @@ local function updateSigns()
 		end
 	end
 end
-
-----------------------------------------------------------------------
 
 function PlotService.init(c)
 	ctx = c

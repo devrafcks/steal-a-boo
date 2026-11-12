@@ -1,20 +1,3 @@
---[[
-	BooService.luau — o loop principal.
-
-	Spawn nas zonas -> Captura -> Inventário -> Base (slot) -> Renda por segundo
-	Roubo: o ladrão segura o prompt num Boo de outra base (portão aberto), carrega o Boo
-	na cabeça (mais lento) e precisa entrar na PRÓPRIA base para concluir.
-	Se morrer, tomar slap/susto ou ser expulso, o Boo cai no chão por DroppedBooSeconds.
-	Ninguém pega o Boo -> volta para o dono original.
-
-	Defesa: qualquer jogador pode SOCAR (tecla Q) quem carrega um Boo roubado: cada soco tira 1 de
-	"pegada" (Config.Combat.GripBase + Segurança do dono); zerou, o Boo cai e o ladrão fica atordoado.
-	Também dá para TOMAR o Boo da mão do ladrão (prompt E no Boo carregado): vira de quem tomou
-	(se for o dono original, ele volta direto para a base). O ladrão fica marcado com um contorno
-	vermelho e "LADRÃO" para todo mundo ver.
-
-	Toda regra é checada aqui (servidor). O cliente só dispara prompts/remotes.
-]]
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 
@@ -40,9 +23,6 @@ for _, z in ipairs(Config.Zones) do
 	ZONE_BY_NAME[z.name] = z
 end
 
-----------------------------------------------------------------------
--- Helpers de dados
-----------------------------------------------------------------------
 local function inventoryCount(data): number
 	local n = 0
 	for _, c in pairs(data.Inventory) do
@@ -98,8 +78,8 @@ function BooService.incomeMultiplier(player: Player, data): number
 	if ctx.Passes.owns(player, "VIP") then
 		m *= 1.1
 	end
-	m *= ctx.Upgrades.incomeMultiplier(data) -- trilha Gerador
-	-- Esteiras pagas (2x/3x/4x por 2 min)
+	m *= ctx.Upgrades.incomeMultiplier(data)
+
 	if (data.IncomeBoostEnds or 0) > os.time() then
 		m *= math.max(1, data.IncomeBoostMult or 1)
 	end
@@ -126,7 +106,6 @@ function BooService.vaultCapacity(player: Player, data): number
 	return ctx.Upgrades.vaultCapacity(data, BooService.incomePerSec(player, data))
 end
 
--- Guarda no inventário e tenta colocar direto na base (melhor UX)
 local function giveBoo(player: Player, data, key: string, autoPlace: boolean?)
 	if autoPlace ~= false then
 		local slot = firstFreeSlot(player, data)
@@ -141,9 +120,6 @@ local function giveBoo(player: Player, data, key: string, autoPlace: boolean?)
 end
 BooService.giveBoo = giveBoo
 
-----------------------------------------------------------------------
--- Zonas: spawn e captura
-----------------------------------------------------------------------
 local function currentLuck(): number
 	return ctx.Products.serverLuck()
 end
@@ -241,7 +217,6 @@ function BooService.tryCapture(player: Player, model: Model)
 	local position = model.PrimaryPart.Position
 	removeZoneBoo(model)
 
-	-- trilha Sorte: chance de um sorteio extra (com 3x de sorte) que fica com o melhor Boo
 	local luckBonus = ctx.Upgrades.luckMultiplier(data) - 1
 	if luckBonus > 0 and rng:NextNumber() < luckBonus then
 		local extra = Rarity.roll(zone.name, currentLuck() * 3 * (1 + zone.luckBias), rng)
@@ -280,9 +255,6 @@ function BooService.tryCapture(player: Player, model: Model)
 	ctx.PlayerData.markDirty(player)
 end
 
-----------------------------------------------------------------------
--- Base: colocar, guardar, vender
-----------------------------------------------------------------------
 function BooService.place(player: Player, key, slotIndex)
 	local data = ctx.PlayerData.data(player)
 	if not data or not ctx.Plots.getPlot(player) then
@@ -304,14 +276,13 @@ function BooService.place(player: Player, key, slotIndex)
 	local old = data.PlotLayout[slotKey]
 	removeInventory(data, key)
 	if old then
-		addInventory(data, old) -- troca explícita
+		addInventory(data, old)
 	end
 	data.PlotLayout[slotKey] = key
 	ctx.Plots.renderSlots(player)
 	ctx.PlayerData.markDirty(player)
 end
 
--- Prompt no slot vazio: coloca o Boo de maior renda do inventário
 function BooService.placeBest(player: Player, slotIndex: number)
 	local data = ctx.PlayerData.data(player)
 	if not data then
@@ -369,14 +340,11 @@ function BooService.sell(player: Player, key)
 	ctx.PlayerData.markDirty(player)
 end
 
-----------------------------------------------------------------------
--- Roubo
-----------------------------------------------------------------------
 function BooService.isCarrying(player: Player): boolean
 	return carrying[player] ~= nil
 end
 
-local takeFromCarrier -- definido mais abaixo
+local takeFromCarrier
 
 local function attachCarry(thief: Player, key: string, fromUserId: number, grip: number?)
 	local char = thief.Character
@@ -392,7 +360,6 @@ local function attachCarry(thief: Player, key: string, fromUserId: number, grip:
 	model.Name = "CarriedBoo"
 	model.Parent = char
 
-	-- Prompt: qualquer outro jogador pode tomar o Boo da mão do ladrão
 	local take = Instance.new("ProximityPrompt")
 	take.Name = "TakePrompt"
 	take.ActionText = "Tomar o Boo"
@@ -407,7 +374,6 @@ local function attachCarry(thief: Player, key: string, fromUserId: number, grip:
 		end
 	end)
 
-	-- Marcador visível para todos: contorno vermelho atravessando paredes + "LADRÃO"
 	local highlight = Instance.new("Highlight")
 	highlight.Name = "ThiefMarker"
 	highlight.FillTransparency = 1
@@ -460,7 +426,6 @@ local function clearCarry(player: Player)
 	return c
 end
 
--- Devolve o Boo para o dono original (se ainda está no servidor)
 local function returnToOwner(key: string, fromUserId: number)
 	local owner = Players:GetPlayerByUserId(fromUserId)
 	local data = owner and ctx.PlayerData.data(owner)
@@ -511,7 +476,7 @@ function BooService.dropCarried(player: Player, reason: string)
 		returnToOwner(c.key, c.fromUserId)
 		return
 	end
-	-- Se caiu dentro de uma base trancada/no vazio, devolve direto
+
 	local ground = Vector3.new(pos.X, 2.2, pos.Z)
 	if reason == "left" or pos.Y < -20 then
 		returnToOwner(c.key, c.fromUserId)
@@ -637,7 +602,6 @@ function BooService.trySteal(thief: Player, model: Model)
 	)
 end
 
--- Tomar o Boo da mão do ladrão (prompt E no Boo carregado)
 function takeFromCarrier(taker: Player, carrier: Player)
 	local c = carrying[carrier]
 	if not c or taker == carrier then
@@ -681,14 +645,12 @@ function takeFromCarrier(taker: Player, carrier: Player)
 end
 BooService.takeFromCarrier = takeFromCarrier
 
--- SÓ para testes no Studio (chamado pelo StudioGrant, que nem existe em produção)
 function BooService.studioCarry(player: Player, key: string)
 	if game:GetService("RunService"):IsStudio() and not carrying[player] then
 		attachCarry(player, key, 777000777, Config.Combat.GripBase)
 	end
 end
 
--- Soco (tecla Q / botão Bater): derruba a pegada do ladrão mais perto
 function BooService.punch(attacker: Player)
 	local _, _, root = ctx.Net.alive(attacker)
 	if not root or ctx.Character.isFrozen(attacker) then
@@ -778,9 +740,6 @@ local function checkDeliveries()
 	end
 end
 
-----------------------------------------------------------------------
--- Isca
-----------------------------------------------------------------------
 function BooService.spawnDecoy(player: Player, duration: number): boolean
 	local plot = ctx.Plots.getPlot(player)
 	local data = ctx.PlayerData.data(player)
@@ -826,9 +785,6 @@ function BooService.spawnDecoy(player: Player, duration: number): boolean
 	return true
 end
 
-----------------------------------------------------------------------
--- Rebirth helper
-----------------------------------------------------------------------
 function BooService.clearBelowTier(player: Player, data, minTier: number)
 	for slot, key in pairs(data.PlotLayout) do
 		if Rarity.booTier(key) < minTier then
@@ -842,8 +798,6 @@ function BooService.clearBelowTier(player: Player, data, minTier: number)
 	end
 	ctx.Plots.renderSlots(player)
 end
-
-----------------------------------------------------------------------
 
 function BooService.init(c)
 	ctx = c
@@ -865,14 +819,12 @@ function BooService.init(c)
 		BooService.dropCarried(player, "left")
 	end)
 
-	-- Enche as zonas logo no início
 	for _, zone in ipairs(Config.Zones) do
 		for _ = 1, zone.maxBoos do
 			spawnZoneBoo(zone)
 		end
 	end
 
-	-- Spawn das zonas (e troca de Boos velhos para girar o "carrossel" de raridades)
 	task.spawn(function()
 		while true do
 			for _, zone in ipairs(Config.Zones) do
@@ -894,7 +846,6 @@ function BooService.init(c)
 		end
 	end)
 
-	-- Renda passiva: cai no COFRE da base (o dono coleta na esteira de coleta)
 	task.spawn(function()
 		while true do
 			local dt = task.wait(Config.Economy.IncomeTickSeconds)
@@ -904,7 +855,6 @@ function BooService.init(c)
 					local income = BooService.incomePerSec(player, data)
 					local gain = income * dt
 					if gain > 0 then
-						-- o cofre tem limite: cheio, a renda para até o dono coletar
 						local cap = ctx.Upgrades.vaultCapacity(data, income)
 						local vault = data.Vault or 0
 						if vault < cap then
@@ -917,7 +867,6 @@ function BooService.init(c)
 		end
 	end)
 
-	-- Entregas de roubo
 	task.spawn(function()
 		while true do
 			task.wait(0.2)

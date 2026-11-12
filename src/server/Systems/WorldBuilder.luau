@@ -1,19 +1,3 @@
---[[
-	WorldBuilder.luau — monta o mapa inteiro quando o jogo começa.
-
-	Se já existir workspace.StealABooWorld (você editou o mapa à mão e salvou),
-	ele NÃO reconstrói: só usa o que está lá (mesmos nomes de peças).
-
-	Layout (vista de cima, +X = leste):
-	  - Terreno de grama (Terrain) com lago, morros e mata em volta
-	  - Praça neutra no centro (0,0,0), raio Config.World.PlazaRadius
-	  - 8 bases: 4 ao norte (z = -105) e 4 ao sul (z = +105), frente virada para a praça
-	  - Zonas de captura a leste (Feirinha, Corredor, Terreno da Lua) e a Tenda Secreta a oeste
-
-	Visual: primitivas + MaterialVariants gerados (Config.Materials) + modelos gratuitos
-	do Creator Store guardados em ServerStorage.ExternalAssets (ver assets/CREDITS.md).
-	Se algum desses não existir, usa a versão feita com primitivas.
-]]
 local InsertService = game:GetService("InsertService")
 local Lighting = game:GetService("Lighting")
 local ServerStorage = game:GetService("ServerStorage")
@@ -27,7 +11,7 @@ local WorldBuilder = {}
 
 local M = Config.Materials
 local P = Config.Plot
-local rng = Random.new(20261110) -- semente fixa: o mapa sai igual em todo servidor
+local rng = Random.new(20261110)
 
 local PLOT_COLORS = {
 	Color3.fromRGB(255, 140, 190),
@@ -146,7 +130,6 @@ local function stripedAwning(parent: Instance, cf: CFrame, width: number, depth:
 	end
 end
 
--- Coloca um modelo com a base encostada no chão (y = groundY)
 local function placeOnGround(model: Model, pos: Vector3, yaw: number?, groundY: number?)
 	model:PivotTo(CFrame.new(pos) * CFrame.Angles(0, yaw or 0, 0))
 	local cf, size = model:GetBoundingBox()
@@ -155,9 +138,6 @@ local function placeOnGround(model: Model, pos: Vector3, yaw: number?, groundY: 
 	return model
 end
 
--- Modelos gratuitos do Creator Store (IDs em Config.ExternalAssets, créditos em assets/CREDITS.md).
--- Ordem: ServerStorage.ExternalAssets (place salvo no Studio) -> InsertService:LoadAsset (place
--- publicado pelo CI, que não carrega essa pasta) -> nil (o mapa usa a versão feita com primitivas).
 local externalCache: { [string]: Model | false } = {}
 
 local function loadExternal(name: string): Model?
@@ -198,7 +178,6 @@ local function loadExternal(name: string): Model?
 	return nil
 end
 
--- Clona o modelo (sem scripts, ancorado). nil se não existir
 local function asset(name: string): Model?
 	local src = loadExternal(name)
 	if not src then
@@ -207,7 +186,7 @@ local function asset(name: string): Model?
 	local c = src:Clone()
 	for _, d in c:GetDescendants() do
 		if d:IsA("LuaSourceContainer") then
-			d:Destroy() -- nunca roda script de modelo de terceiros
+			d:Destroy()
 		elseif d:IsA("BasePart") then
 			d.Anchored = true
 		end
@@ -215,9 +194,6 @@ local function asset(name: string): Model?
 	return c
 end
 
-----------------------------------------------------------------------
--- Céu e luz
-----------------------------------------------------------------------
 local function buildLighting()
 	Lighting.ClockTime = 22.4
 	Lighting.GeographicLatitude = 35
@@ -232,7 +208,7 @@ local function buildLighting()
 			child:Destroy()
 		end
 	end
-	-- Sky padrão do engine (estrelas e lua embutidas), com lua grande e muitas estrelas
+
 	mk("Sky", {
 		StarCount = 5000,
 		MoonAngularSize = 24,
@@ -255,7 +231,6 @@ local function buildLighting()
 		Lighting
 	)
 
-	-- Nuvens rosadas
 	local terrain = Workspace.Terrain
 	local clouds = terrain:FindFirstChildOfClass("Clouds") or Instance.new("Clouds")
 	clouds.Cover = 0.55
@@ -264,23 +239,19 @@ local function buildLighting()
 	clouds.Parent = terrain
 end
 
-----------------------------------------------------------------------
--- Chão: grama, lago, morros, caminhos
-----------------------------------------------------------------------
 local function buildGround(world: Instance)
 	local terrain = Workspace.Terrain
 	terrain:Clear()
 	terrain:SetMaterialColor(Enum.Material.Grass, Color3.fromRGB(80, 150, 90))
 	terrain:SetMaterialColor(Enum.Material.LeafyGrass, Color3.fromRGB(70, 135, 85))
 	terrain:SetMaterialColor(Enum.Material.Sand, Color3.fromRGB(240, 210, 160))
-	-- (a graminha 3D é Terrain.Decoration, ligada no Studio: não pode ser alterada por script em jogo)
+
 	terrain.WaterColor = Color3.fromRGB(90, 160, 220)
 	terrain.WaterTransparency = 0.6
 	terrain.WaterWaveSize = 0.1
 
-	-- Chão inteiro de grama (topo em y = 0)
-	terrain:FillBlock(CFrame.new(0, -10, 0), Vector3.new(760, 16, 760), Enum.Material.Grass) -- o FillBlock arredonda 2 studs para cima: superfície fica em y = 0
-	-- Morros fora do mapa (horizonte)
+	terrain:FillBlock(CFrame.new(0, -10, 0), Vector3.new(760, 16, 760), Enum.Material.Grass)
+
 	for i = 1, 22 do
 		local a = i * math.pi * 2 / 22
 		local r = 360 + rng:NextNumber(0, 40)
@@ -290,11 +261,10 @@ local function buildGround(world: Instance)
 			Enum.Material.LeafyGrass
 		)
 	end
-	-- Lago com areia (sul-oeste das bases do norte)
+
 	terrain:FillCylinder(CFrame.new(-10, -2, -225), 6, 36, Enum.Material.Sand)
 	terrain:FillCylinder(CFrame.new(-10, -3, -225), 8, 30, Enum.Material.Water)
 
-	-- Embaixo de construções e caminhos: terra batida (sem graminha atravessando o chão)
 	terrain:SetMaterialColor(Enum.Material.Ground, Color3.fromRGB(150, 115, 85))
 	local function dirt(center: Vector3, size: Vector3)
 		local half = size / 2
@@ -302,7 +272,7 @@ local function buildGround(world: Instance)
 			:ExpandToGrid(4)
 		terrain:ReplaceMaterial(region, 4, Enum.Material.Grass, Enum.Material.Ground)
 	end
-	dirt(Vector3.zero, Vector3.new(104, 0, 104)) -- praça
+	dirt(Vector3.zero, Vector3.new(104, 0, 104))
 	for _, x in ipairs({ -90, -30, 30, 90 }) do
 		dirt(Vector3.new(x, 0, 105), Vector3.new(56, 0, 56))
 		dirt(Vector3.new(x, 0, -105), Vector3.new(56, 0, 56))
@@ -316,7 +286,6 @@ local function buildGround(world: Instance)
 	dirt(Vector3.new(0, 0, -72), Vector3.new(206, 0, 14))
 	dirt(Vector3.new(0, 0, 72), Vector3.new(206, 0, 14))
 
-	-- Paredes invisíveis do limite do mapa
 	local half = 320
 	for _, data in
 		{
@@ -333,7 +302,6 @@ local function buildGround(world: Instance)
 		)
 	end
 
-	-- Caminhos de pedra até as zonas e bases
 	local paths = {
 		{ "PathEast", Vector3.new(230, 0.2, 14), CFrame.new(155, 0.1, 0) },
 		{ "PathWest", Vector3.new(110, 0.2, 14), CFrame.new(-95, 0.1, 0) },
@@ -362,9 +330,6 @@ local function buildGround(world: Instance)
 	end
 end
 
-----------------------------------------------------------------------
--- Natureza e decoração
-----------------------------------------------------------------------
 local function primitiveTree(parent: Instance, pos: Vector3, scale: number)
 	local m = mk("Model", { Name = "Tree" }, parent)
 	local trunkH = 8 * scale
@@ -426,16 +391,15 @@ local function bush(parent: Instance, pos: Vector3)
 	return m
 end
 
--- Lugares onde NÃO pode ter árvore (praça, bases, zonas, caminhos, lago)
 local function isFree(x: number, z: number): boolean
 	if Vector2.new(x, z).Magnitude < 70 then
 		return false
 	end
 	if math.abs(x) < 130 and math.abs(z) > 60 and math.abs(z) < 150 then
-		return false -- bases
+		return false
 	end
 	if math.abs(z) < 24 and x > -180 and x < 290 then
-		return false -- caminhos leste/oeste
+		return false
 	end
 	if math.abs(x) < 16 and math.abs(z) < 140 then
 		return false
@@ -446,7 +410,7 @@ local function isFree(x: number, z: number): boolean
 		end
 	end
 	if (Vector2.new(x, z) - Vector2.new(-10, -225)).Magnitude < 46 then
-		return false -- lago
+		return false
 	end
 	return math.abs(x) < 306 and math.abs(z) < 306
 end
@@ -482,7 +446,7 @@ local function buildNature(world: Instance)
 			bushes += 1
 		end
 	end
-	-- Arbustos em volta da praça e na frente das bases
+
 	for i = 1, 16 do
 		local a = i * math.pi * 2 / 16 + 0.1
 		bush(nature, Vector3.new(math.cos(a) * 52, 0, math.sin(a) * 52))
@@ -528,7 +492,7 @@ end
 
 local function buildDecor(world: Instance)
 	local decor = mk("Folder", { Name = "Decor" }, world)
-	-- Bancos na praça, virados para o centro
+
 	for i = 0, 3 do
 		local a = math.rad(45 + i * 90)
 		local pos = Vector3.new(math.cos(a) * 36, 0, math.sin(a) * 36)
@@ -537,7 +501,7 @@ local function buildDecor(world: Instance)
 			placeOnGround(bench, pos, -a + math.pi / 2, 0.4).Parent = decor
 		end
 	end
-	-- Carrinhos de pipoca
+
 	for _, data in ipairs({
 		{ Vector3.new(-34, 0, -24), math.rad(40) },
 		{ Vector3.new(125, 0, 18), math.rad(-90) },
@@ -548,14 +512,14 @@ local function buildDecor(world: Instance)
 			placeOnGround(cart, data[1], data[2], 0.4).Parent = decor
 		end
 	end
-	-- Varais de luzes atravessando o caminho
+
 	for _, x in ipairs({ 55, 135, 215 }) do
 		local lights = asset("StringLights")
 		if lights then
 			placeOnGround(lights, Vector3.new(x, 0, 0), 0, 0.2).Parent = decor
 		end
 	end
-	-- Balões
+
 	for _, pos in ipairs({
 		Vector3.new(9, 0, 14),
 		Vector3.new(-9, 0, 14),
@@ -566,9 +530,6 @@ local function buildDecor(world: Instance)
 	end
 end
 
-----------------------------------------------------------------------
--- Praça
-----------------------------------------------------------------------
 local function buildPlaza(world: Instance)
 	local plaza = mk("Model", { Name = "Plaza" }, world)
 	local R = Config.World.PlazaRadius
@@ -625,7 +586,6 @@ local function buildPlaza(world: Instance)
 		Duration = 0,
 	}, plaza)
 
-	-- Carrossel (Boo surpresa com Cash)
 	local carousel = mk("Model", { Name = "Carousel" }, plaza)
 	mk("Part", {
 		Name = "Base",
@@ -685,9 +645,8 @@ local function buildPlaza(world: Instance)
 	}, carousel)
 	prompt(carouselStand, "Boo surpresa", "Carrossel", 0.3, "CarouselPrompt")
 	billboard(carouselStand, "🎠 Boo Surpresa", UDim2.fromOffset(180, 36), Vector3.new(0, 4, 0), nil, 70)
-	roof:SetAttribute("Spin", 0.4) -- o cliente gira localmente
+	roof:SetAttribute("Spin", 0.4)
 
-	-- Loja física
 	local shop = mk("Model", { Name = "ShopStall" }, plaza)
 	mk("Part", {
 		Name = "Counter",
@@ -713,7 +672,7 @@ local function buildPlaza(world: Instance)
 		{ Color3.fromRGB(255, 90, 160), Color3.fromRGB(255, 255, 255) }
 	)
 	local shopPrompt = prompt(shop.Counter, "Abrir Loja", "Loja do Boo", 0, "ShopPrompt")
-	shopPrompt:SetAttribute("OpenUI", "Shop") -- o cliente abre a loja (nada é concedido aqui)
+	shopPrompt:SetAttribute("OpenUI", "Shop")
 	billboard(
 		shop.Counter,
 		"🛒 LOJA",
@@ -723,7 +682,6 @@ local function buildPlaza(world: Instance)
 		110
 	)
 
-	-- Estação de treino: esteira (Speed)
 	local tread = mk("Model", { Name = "SpeedStation" }, plaza)
 	local belt = mk("Part", {
 		Name = "Belt",
@@ -753,7 +711,6 @@ local function buildPlaza(world: Instance)
 	prompt(speedPanel, "Treinar Speed", "Esteira", 0, "TrainPrompt"):SetAttribute("Stat", "Speed")
 	billboard(speedPanel, "🏃 Treino de Speed", UDim2.fromOffset(200, 36), Vector3.new(0, 5, 0), nil, 80)
 
-	-- Estação de treino: alvo (Throw Power)
 	local target = mk("Model", { Name = "ThrowStation" }, plaza)
 	for i, c in ipairs({
 		Color3.fromRGB(255, 255, 255),
@@ -788,7 +745,6 @@ local function buildPlaza(world: Instance)
 	prompt(throwPanel, "Treinar Throw", "Alvo", 0, "TrainPrompt"):SetAttribute("Stat", "Throw")
 	billboard(throwPanel, "🎯 Treino de Throw", UDim2.fromOffset(200, 36), Vector3.new(0, 4, 0), nil, 80)
 
-	-- Baú diário
 	local chest = mk("Model", { Name = "DailyChest" }, plaza)
 	local chestBase = mk("Part", {
 		Name = "ChestBase",
@@ -818,7 +774,6 @@ local function buildPlaza(world: Instance)
 	prompt(chestBase, "Pegar Daily", "Baú Diário", 0.3, "DailyPrompt")
 	billboard(chestBase, "🎁 Daily", UDim2.fromOffset(140, 36), Vector3.new(0, 5, 0), nil, 80)
 
-	-- Painéis de leaderboard
 	for i, data in ipairs({
 		{ "CashBoard", "💰 Mais Cash (all-time)", Vector3.new(-22, 0, -54) },
 		{ "RebirthBoard", "♻️ Mais Rebirths", Vector3.new(22, 0, -54) },
@@ -860,9 +815,6 @@ local function buildPlaza(world: Instance)
 	end
 end
 
-----------------------------------------------------------------------
--- Bases
-----------------------------------------------------------------------
 local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 	local plot = mk("Model", { Name = "Plot_" .. index }, plotsFolder)
 	plot:SetAttribute("Index", index)
@@ -903,7 +855,7 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 	wall("WallFrontR", Vector3.new(segW, H, 1), CFrame.new(gateW / 2 + segW / 2, H / 2, -hz))
 	wall("GateTop", Vector3.new(gateW, H - 10, 1), CFrame.new(0, 10 + (H - 10) / 2, -hz))
 	stripedAwning(plot, cf * CFrame.new(0, H + 0.4, -hz - 2), S.X, 5, { color, Color3.new(1, 1, 1) })
-	-- Luzinhas no topo do muro
+
 	for x = -hx + 2, hx - 2, 4 do
 		mk("Part", {
 			Name = "WallLight",
@@ -916,7 +868,6 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		}, plot)
 	end
 
-	-- Portão: não colide; a trava é aplicada pelo servidor (expulsa intrusos)
 	mk("Part", {
 		Name = "Gate",
 		Size = Vector3.new(gateW, 10, 0.6),
@@ -948,7 +899,6 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 	prompt(lockButton, "Trancar base", "Portão", 0.2, "LockPrompt")
 	Label.pill(lockButton, "🔒 Portão", { width = 160, lift = 6, color = Color3.fromRGB(150, 255, 190) })
 
-	-- Placa com nome do dono e Cash/s (texto atualizado pelo PlotService)
 	local sign = mk("Part", {
 		Name = "Sign",
 		Size = Vector3.one,
@@ -958,7 +908,7 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		CanQuery = false,
 	}, plot)
 	billboard(sign, "Base livre", UDim2.fromOffset(200, 48), Vector3.zero, nil, 110)
-	-- Luz quente dentro da base (a feira é à noite)
+
 	local inner = mk("Part", {
 		Name = "InnerLight",
 		Size = Vector3.one,
@@ -988,7 +938,6 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		CanCollide = false,
 	}, plot)
 
-	-- Esteira de coleta + cofre (pise no pad dourado para coletar)
 	local collector = mk("Part", {
 		Name = "CollectorBelt",
 		Size = Vector3.new(16, 0.5, 4),
@@ -1008,7 +957,6 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 	}, plot)
 	Label.pill(pad, "Cofre", { width = 250, lift = 6.5, color = Color3.fromRGB(255, 230, 120), maxDistance = 55 })
 
-	-- Esteiras pagas 2x / 3x / 4x (o prompt abre a compra no cliente)
 	local belts = {
 		{ "Belt2x", "2x", Color3.fromRGB(90, 220, 140), -12 },
 		{ "Belt3x", "3x", Color3.fromRGB(255, 170, 70), -4 },
@@ -1032,13 +980,12 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		Label.pill(part, string.format("%s RENDA\nR$%d", b[2], def.price), {
 			width = 132,
 			height = 58,
-			lift = 6.2 + (beltIndex - 1) * 2.6, -- escalonadas para não se sobrepor de lado
+			lift = 6.2 + (beltIndex - 1) * 2.6,
 			color = b[3],
 			maxDistance = 36,
 		})
 	end
 
-	-- Placa de upgrade (construir andares)
 	local board = mk("Part", {
 		Name = "UpgradeBoard",
 		Size = Vector3.new(6, 5, 0.6),
@@ -1050,7 +997,6 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 	prompt(board, "Construir andar", "Melhorar base", 0.3, "UpgradePrompt").MaxActivationDistance = 9
 	Label.pill(board, "🏗️ Melhorar base", { width = 220, lift = 8, color = Color3.fromRGB(255, 240, 150) })
 
-	-- Elevador do térreo (o andar 2 só existe depois do upgrade)
 	local lift = mk("Part", {
 		Name = "LiftUp",
 		Shape = Enum.PartType.Cylinder,
@@ -1070,7 +1016,6 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 		CanQuery = false,
 	}, plot)
 
-	-- Slots do térreo (frente -> fundo); andares de cima são criados pelo PlotService
 	local slots = mk("Folder", { Name = "Slots" }, plot)
 	local i = 0
 	for _, z in ipairs({ -10, -2, 6 }) do
@@ -1093,9 +1038,6 @@ local function buildPlot(plotsFolder: Instance, index: number, cf: CFrame)
 	return plot
 end
 
-----------------------------------------------------------------------
--- Zonas de captura
-----------------------------------------------------------------------
 local ZONE_ICONS = { Fairground = "🎪", Midway = "🎯", MoonLot = "🌙", SecretTent = "🔮" }
 
 local function buildZone(zonesFolder: Instance, zone)
@@ -1119,7 +1061,7 @@ local function buildZone(zonesFolder: Instance, zone)
 		Material = Enum.Material.SmoothPlastic,
 		CanCollide = false,
 	}, m)
-	-- Arco de entrada
+
 	local archCF = CFrame.new(zone.center + Vector3.new(-zone.radius - 2, 0, 0)) * CFrame.Angles(0, math.rad(90), 0)
 	if zone.name == "SecretTent" then
 		archCF = CFrame.new(zone.center + Vector3.new(zone.radius + 2, 0, 0)) * CFrame.Angles(0, math.rad(90), 0)
@@ -1215,7 +1157,6 @@ local function buildZone(zonesFolder: Instance, zone)
 			}, m)
 		end
 	elseif zone.name == "Fairground" then
-		-- roda-gigante decorativa
 		local wheelCF = CFrame.new(zone.center + Vector3.new(0, 22, -34))
 		local wheel = mk("Model", { Name = "Wheel" }, m)
 		for k = 1, 12 do
@@ -1251,8 +1192,6 @@ local function buildZone(zonesFolder: Instance, zone)
 	return m
 end
 
-----------------------------------------------------------------------
-
 function WorldBuilder.build()
 	local existing = Workspace:FindFirstChild("StealABooWorld")
 	buildLighting()
@@ -1265,7 +1204,7 @@ function WorldBuilder.build()
 		end
 		return existing
 	end
-	-- Remove o Baseplate e o SpawnLocation que vêm no place vazio do Studio
+
 	for _, name in { "Baseplate", "SpawnLocation" } do
 		local default = Workspace:FindFirstChild(name)
 		if default and default:IsA("BasePart") then

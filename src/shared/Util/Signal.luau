@@ -1,8 +1,3 @@
---[[
-	Signal.luau — evento simples em Luau puro.
-	Diferente de BindableEvent, passa tabelas por referência (sem cópia e sem erro
-	de "tables cannot be cyclic" com objetos como o Profile do ProfileStore).
-]]
 local Signal = {}
 Signal.__index = Signal
 
@@ -26,7 +21,6 @@ function Signal:Connect(fn)
 	}
 end
 
--- Cada handler roda na própria thread: um erro num handler não impede os outros
 function Signal:Fire(...)
 	for _, entry in ipairs(table.clone(self._handlers)) do
 		task.spawn(entry.fn, ...)

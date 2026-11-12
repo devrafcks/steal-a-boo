@@ -1,11 +1,5 @@
 name: Deploy
 
-# Publica o jogo na Roblox a cada push na main que mexa no jogo (ou manualmente).
-# Precisa do secret ROBLOX_API_KEY (veja a seção "CI/CD" do README). Sem o secret, o workflow
-# só valida e gera o place, e avisa que NÃO publicou.
-#
-# ATENÇÃO: o repositório é a fonte da verdade. A publicação SUBSTITUI o conteúdo do place pelo
-# que o Rojo gera; edições feitas só dentro do Studio e nunca commitadas são perdidas.
 on:
   push:
     branches: [main]
@@ -26,7 +20,6 @@ on:
 permissions:
   contents: read
 
-# nunca dois deploys ao mesmo tempo, e um deploy em andamento não é cancelado no meio
 concurrency:
   group: deploy
   cancel-in-progress: false
@@ -52,8 +45,6 @@ jobs:
           selene src
 
       - name: Teste do Config
-        # IDs zerados (item ainda não criado na Roblox) viram AVISO: a loja mostra "Em breve" e
-        # nunca chama a compra desse item. Para exigir todos os IDs, use REQUIRE_IDS=1.
         run: |
           lune run tests/config-check | tee config-check.txt
           if grep -q "id = 0" config-check.txt; then

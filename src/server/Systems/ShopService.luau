@@ -1,13 +1,3 @@
---[[
-	ShopService.luau
-	- GetShopCatalog: devolve passes e produtos montados a partir do Config (com "owned").
-	- Carrossel da praça: compra um Boo surpresa com Cash (nada de Robux aqui).
-	- StudioGrant: SÓ no Studio. Testa o fluxo inteiro da loja com IDs = 0 sem cobrar nada.
-	  O remote nem é criado em produção e o handler checa RunService:IsStudio() de novo.
-
-	A compra com Robux em si é: cliente chama PromptProductPurchase/PromptGamePassPurchase
-	-> Roblox cobra -> servidor entrega no ProcessReceipt / GamePasses. Nunca aqui.
-]]
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
@@ -116,12 +106,10 @@ local function studioGrant(player: Player, kind, key)
 			ctx.Products.grant(player, data, key)
 		end
 	elseif kind == "Test" and ctx.Net.isString(key, 16) then
-		-- cenários de teste do StudioTests (só no Studio; o módulo só é carregado aqui)
 		task.spawn(function()
 			require(script.Parent.StudioTests).run(ctx, player, key)
 		end)
 	elseif kind == "Carry" and ctx.Net.isString(key) and Config.Boos[key] then
-		-- teste de combate com um jogador só: faz o jogador carregar um Boo "roubado" de um dono fictício
 		ctx.Boos.studioCarry(player, key)
 	end
 end

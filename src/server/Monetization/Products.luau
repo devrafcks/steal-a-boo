@@ -1,10 +1,3 @@
---[[
-	Products.luau — o que cada Dev Product entrega (lido de Config.Products[x].kind).
-
-	Server Luck: cada compra vira uma "entrada" com mult e fim próprios.
-	A sorte ativa é o MAIOR mult entre as entradas que ainda não acabaram
-	(2x + 8x = 8x; quando o 8x acaba, o 2x continua até o fim dele). Ninguém perde compra.
-]]
 local Workspace = game:GetService("Workspace")
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
@@ -45,7 +38,6 @@ local function publishLuck()
 	Workspace:SetAttribute("ServerLuckBy", best and best.buyer or "")
 end
 
--- Por produto: retorna true se entregou
 local GRANTS = {}
 
 GRANTS.ServerLuck = function(player, _data, def)
@@ -67,12 +59,11 @@ GRANTS.PersonalCash2x = function(_player, data, def)
 	return true
 end
 
--- Esteira paga: fica com o MAIOR multiplicador; comprar de novo soma tempo
 GRANTS.IncomeBoost = function(_player, data, def)
 	local now = os.time()
 	local active = (data.IncomeBoostEnds or 0) > now
 	if active and (data.IncomeBoostMult or 1) >= def.mult then
-		data.IncomeBoostEnds += def.duration -- mantém o maior multiplicador e estende o tempo
+		data.IncomeBoostEnds += def.duration
 	else
 		data.IncomeBoostMult = def.mult
 		data.IncomeBoostEnds = now + def.duration
@@ -80,7 +71,6 @@ GRANTS.IncomeBoost = function(_player, data, def)
 	return true
 end
 
--- Promoção: upgrades e andares pela metade enquanto durar (soma tempo se comprar de novo)
 GRANTS.UpgradeSale = function(_player, data, def)
 	data.UpgradeSaleEnds = math.max(os.time(), data.UpgradeSaleEnds or 0) + def.duration
 	return true
@@ -105,7 +95,6 @@ GRANTS.Cash = function(_player, data, def)
 	return true
 end
 
--- Acha a chave do produto pelo ProductId. ID 0 nunca bate (produto não configurado).
 function Products.keyById(productId: number): string?
 	if type(productId) ~= "number" or productId == 0 then
 		return nil
@@ -118,7 +107,6 @@ function Products.keyById(productId: number): string?
 	return nil
 end
 
--- Entrega de fato. Lança erro se algo estiver errado (o ProcessReceipt trata como NotProcessedYet).
 function Products.grant(player: Player, data, key: string): boolean
 	local def = Config.Products[key]
 	assert(def, "produto desconhecido: " .. tostring(key))

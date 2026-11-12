@@ -1,7 +1,3 @@
---[[
-	State.luau — último snapshot que o servidor mandou (DataUpdated).
-	Só leitura para a UI: o cliente nunca altera dinheiro, inventário etc.
-]]
 local Signal = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared").Util.Signal)
 
 local State = {}

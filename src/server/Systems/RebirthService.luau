@@ -1,10 +1,3 @@
---[[
-	RebirthService.luau
-	Custo: CashRequiredBase * CashRequiredGrowth ^ Rebirths
-	Reseta: Cash (volta para StartingCash) e Boos abaixo de KeepRarityAtOrAbove.
-	Mantém: Speed/Throw, passes, consumíveis, settings, TotalCash, Boos Epic+.
-	Ganha: +IncomeMultiplierPerRebirth de renda para sempre.
-]]
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Config = require(Shared.Config)
 local Rarity = require(Shared.Util.Rarity)
@@ -36,7 +29,7 @@ function RebirthService.rebirth(player: Player)
 	data.Cash = Config.Economy.StartingCash
 	data.Vault = 0
 	ctx.Boos.clearBelowTier(player, data, Rarity.tier(Config.Rebirth.KeepRarityAtOrAbove))
-	-- Garante pelo menos um Boo inicial para não travar o jogador
+
 	if next(data.PlotLayout) == nil and next(data.Inventory) == nil then
 		ctx.Boos.giveBoo(player, data, Config.Economy.StarterBoo)
 	end

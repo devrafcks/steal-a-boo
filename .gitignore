@@ -1,4 +1,3 @@
-# Rojo / Wally
 /Packages
 /ServerPackages
 /DevPackages
@@ -12,5 +11,3 @@ roblox.toml
 /.claude/
 /build/
 /.luau/
-/.mcp.json
-/assets/store/.html/

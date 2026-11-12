@@ -1,5 +1,3 @@
---[[ Types.luau — tipos usados por mais de um módulo ]]
-
 export type BooDef = {
 	name: string,
 	rarity: string,

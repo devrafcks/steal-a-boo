@@ -1,14 +1,3 @@
---[[
-	UpgradeService.luau — o Laboratório e os pedestais.
-
-	Trilhas (Config.Upgrades): Gerador (+renda), Cofre (+capacidade), Sorte (+chance de raros),
-	Segurança (ladrão demora mais, solta mais fácil, portão fica trancado mais tempo).
-	Pedestal (Config.Pedestal): cada slot da base evolui separado e multiplica a renda do Boo ali.
-
-	Tudo é comprado com Cash do jogo, validado aqui. Produto "Promoção de Upgrades" divide o custo
-	de upgrades E de andares pela metade enquanto durar (ver `discount`).
-	Dentro da própria base, o cofre é coletado antes de cobrar (o dinheiro dos Boos já conta).
-]]
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Config = require(Shared.Config)
 
@@ -17,19 +6,14 @@ local UpgradeService = {}
 local ctx
 local U = Config.Upgrades
 
-----------------------------------------------------------------------
--- Níveis e efeitos (funções puras, usadas por BooService/PlotService/snapshot)
-----------------------------------------------------------------------
 function UpgradeService.level(data, track: string): number
 	return math.clamp(data.Upgrades[track] or 0, 0, U[track].max)
 end
 
--- multiplicador de renda do Gerador
 function UpgradeService.incomeMultiplier(data): number
 	return 1 + UpgradeService.level(data, "Income") * U.Income.perLevel
 end
 
--- multiplicador de sorte pessoal (Sorte)
 function UpgradeService.luckMultiplier(data): number
 	return 1 + UpgradeService.level(data, "Luck") * U.Luck.perLevel
 end
@@ -38,12 +22,10 @@ function UpgradeService.securityLevel(data): number
 	return UpgradeService.level(data, "Security")
 end
 
--- segundos de renda que o cofre guarda
 function UpgradeService.vaultSeconds(data): number
 	return Config.Vault.BaseSeconds + UpgradeService.level(data, "Vault") * Config.Vault.SecondsPerLevel
 end
 
--- capacidade em Cash (nunca menos que MinCapacity, para quem tem renda quase zero)
 function UpgradeService.vaultCapacity(data, incomePerSec: number): number
 	return math.max(Config.Vault.MinCapacity, incomePerSec * UpgradeService.vaultSeconds(data))
 end
@@ -56,7 +38,6 @@ function UpgradeService.pedestalMultiplier(level: number): number
 	return 1 + (level - 1) * Config.Pedestal.perLevel
 end
 
--- 1 normal, 0.5 durante a Promoção de Upgrades
 function UpgradeService.discount(data): number
 	if (data.UpgradeSaleEnds or 0) > os.time() then
 		return Config.SaleCostMultiplier
@@ -82,9 +63,6 @@ function UpgradeService.pedestalCost(data, slot): number?
 	return math.floor(P.baseCost * P.growth ^ (level - 1) * UpgradeService.discount(data))
 end
 
-----------------------------------------------------------------------
--- Compras
-----------------------------------------------------------------------
 function UpgradeService.buyTrack(player: Player, track)
 	if not ctx.Net.isString(track, 16) or not U[track] or not table.find(U.Order, track) then
 		return
@@ -109,7 +87,7 @@ function UpgradeService.buyTrack(player: Player, track)
 	end
 	data.Cash -= cost
 	data.Upgrades[track] = UpgradeService.level(data, track) + 1
-	ctx.Plots.refreshOwner(player) -- portão/cofre/prompts dependem dos níveis
+	ctx.Plots.refreshOwner(player)
 	ctx.notify(player, string.format("%s nível %d!", U[track].name, data.Upgrades[track]), "success")
 	ctx.fx("UpgradeBought", { userId = player.UserId, track = track, level = data.Upgrades[track] })
 	ctx.PlayerData.markDirty(player)
@@ -126,7 +104,7 @@ function UpgradeService.buyPedestal(player: Player, slot)
 	if not ctx.Plots.isUnlocked(player, slot) or not ctx.Plots.getPlot(player) then
 		return
 	end
-	-- o pedestal precisa estar perto (o prompt F só aparece perto do Boo)
+
 	local pad = ctx.Plots.pad(ctx.Plots.getPlot(player), slot)
 	if not pad or not ctx.Net.near(player, pad.Position, 14) then
 		return

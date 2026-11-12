@@ -1,12 +1,3 @@
---[[
-	PlayerData.luau — save do jogador com ProfileStore.
-
-	- StartSessionAsync no PlayerAdded (session lock: o mesmo save nunca abre em 2 servidores)
-	- Reconcile() preenche campos novos do TEMPLATE em saves antigos (adicione campos, nunca renomeie)
-	- Autosave nativo do ProfileStore; EndSession no PlayerRemoving; BindToClose espera tudo salvar
-	- Studio sem "Enable Studio Access to API Services": usa ProfileStore.Mock (memória) e avisa no Output
-	- Se o pacote ProfileStore não existir (esqueceu `wally install`), usa um perfil em memória simples
-]]
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -33,44 +24,41 @@ PlayerData.TEMPLATE = {
 	Rebirths = 0,
 	Speed = 0,
 	ThrowPower = 0,
-	SpeedTrains = 0, -- quantas vezes treinou (define o custo)
+	SpeedTrains = 0,
 	ThrowTrains = 0,
-	Inventory = {}, -- [booKey] = quantidade (Boos fora da base)
-	PlotLayout = {}, -- ["slotIndex"] = booKey (chaves string para o DataStore)
+	Inventory = {},
+	PlotLayout = {},
 	OwnedCosmetics = {},
 	Consumables = consumablesTemplate(),
 	LuckyCaptures = 0,
 	Daily = { lastDay = -1, streak = 0 },
-	PurchaseIds = {}, -- [purchaseId] = os.time() da entrega
+	PurchaseIds = {},
 	Settings = { ReduceScares = false, MusicVolume = 0.5 },
 	Stats = { Steals = 0, Captures = 0, TimesStolen = 0, Punches = 0, Recovered = 0 },
 	FirstJoin = 0,
 	TutorialDone = false,
-	Cash2xEnds = 0, -- os.time() em que acaba o 2x Cash pessoal
-	BaseLevel = 1, -- andares construídos (1 = só térreo)
-	Vault = 0, -- renda guardada na base, esperando a coleta
-	IncomeBoostMult = 1, -- esteira paga ativa (2x/3x/4x)
-	IncomeBoostEnds = 0, -- os.time() em que a esteira paga acaba
-	Upgrades = { Income = 0, Vault = 0, Luck = 0, Security = 0 }, -- níveis do Laboratório
-	PedestalLevels = {}, -- [slot] = nível do pedestal (1 = padrão). O nível fica no slot, não no Boo
-	UpgradeSaleEnds = 0, -- os.time() em que a Promoção de Upgrades acaba
+	Cash2xEnds = 0,
+	BaseLevel = 1,
+	Vault = 0,
+	IncomeBoostMult = 1,
+	IncomeBoostEnds = 0,
+	Upgrades = { Income = 0, Vault = 0, Luck = 0, Security = 0 },
+	PedestalLevels = {},
+	UpgradeSaleEnds = 0,
 }
 
 local Profiles: { [Player]: any } = {}
-local Sessions: { [Player]: any } = {} -- estado só desta sessão (não salva)
+local Sessions: { [Player]: any } = {}
 
 local loadedEvent = Signal.new()
 local releasingEvent = Signal.new()
-PlayerData.Loaded = loadedEvent -- (player, profile)
-PlayerData.Releasing = releasingEvent -- (player, profile) antes do EndSession
+PlayerData.Loaded = loadedEvent
+PlayerData.Releasing = releasingEvent
 
 local store
 local usingFallback = false
 local usingMock = false
 
-----------------------------------------------------------------------
--- Fallback: perfil em memória com a mesma "cara" de um Profile
-----------------------------------------------------------------------
 local function deepCopy(t)
 	if type(t) ~= "table" then
 		return t
@@ -117,8 +105,6 @@ local function newMemoryProfile()
 	return profile
 end
 
-----------------------------------------------------------------------
-
 local function studioApiAvailable(): boolean
 	if not RunService:IsStudio() then
 		return true
@@ -163,12 +149,11 @@ local function onPlayerAdded(player: Player)
 	end
 
 	if profile == nil then
-		-- só acontece quando o servidor está desligando
 		player:Kick("Não consegui carregar seu save. Entre de novo, por favor!")
 		return
 	end
 
-	profile:AddUserId(player.UserId) -- GDPR
+	profile:AddUserId(player.UserId)
 	profile:Reconcile()
 	prunePurchaseIds(profile.Data)
 
@@ -189,7 +174,7 @@ local function onPlayerAdded(player: Player)
 	local isNew = data.FirstJoin == 0
 	if isNew then
 		data.FirstJoin = os.time()
-		-- o Boo inicial já nasce colocado na base (renda desde o primeiro segundo)
+
 		data.PlotLayout["1"] = Config.Economy.StarterBoo
 	end
 
@@ -242,7 +227,6 @@ function PlayerData.init()
 	Players.PlayerRemoving:Connect(onPlayerRemoving)
 
 	game:BindToClose(function()
-		-- encerra todas as sessões e espera o ProfileStore gravar (máx ~25s)
 		for _, player in Players:GetPlayers() do
 			task.spawn(onPlayerRemoving, player)
 		end
@@ -273,7 +257,6 @@ function PlayerData.session(player: Player)
 	return Sessions[player]
 end
 
--- Espera o perfil carregar (nil se o jogador saiu ou passou do tempo)
 function PlayerData.waitFor(player: Player, timeout: number?)
 	local deadline = os.clock() + (timeout or 30)
 	while player.Parent == Players and os.clock() < deadline do
@@ -290,9 +273,6 @@ function PlayerData.isUsingRealSave(): boolean
 	return not usingFallback and not usingMock
 end
 
-----------------------------------------------------------------------
--- Snapshot para o HUD (debounce: no máximo 5 por segundo por jogador)
-----------------------------------------------------------------------
 local snapshotBuilder = nil
 local dirty: { [Player]: boolean } = {}
 local dataUpdatedRemote: RemoteEvent? = nil

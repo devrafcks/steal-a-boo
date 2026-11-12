@@ -1,7 +1,3 @@
---[[
-	Panels.luau — painéis: Bolsa (inventário), Rebirth, Daily, Ranking e Ajustes.
-	Botões só PEDEM ao servidor; o resultado volta pelo snapshot (DataUpdated).
-]]
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -18,9 +14,6 @@ local T = UI.Theme
 
 local Panels = {}
 
-----------------------------------------------------------------------
--- Bolsa
-----------------------------------------------------------------------
 local _, invBody = UI.panel("Inventory", "Bolsa de Boos", UDim2.fromOffset(640, 460))
 local invInfo = UI.text(
 	invBody,
@@ -46,7 +39,6 @@ UI.make("UIGridLayout", {
 
 local lastInvSignature = ""
 local function renderInventory(data)
-	-- só redesenha quando o inventário/base mudou (o snapshot chega a cada segundo)
 	local parts = { tostring(data.SlotCount) }
 	for k, v in pairs(data.Inventory) do
 		table.insert(parts, k .. "=" .. v)
@@ -142,9 +134,6 @@ local function renderInventory(data)
 	end
 end
 
-----------------------------------------------------------------------
--- Rebirth
-----------------------------------------------------------------------
 local _, rebBody = UI.panel("Rebirth", "Rebirth", UDim2.fromOffset(520, 340))
 local rebText = UI.text(rebBody, { Text = "", Size = UDim2.new(1, 0, 0, 170), MaxTextSize = 24, RichText = true })
 local rebButton = UI.button(rebBody, {
@@ -183,9 +172,6 @@ local function renderRebirth(data)
 	UI.setDisabled(rebButton, data.Cash < data.RebirthCost, T.Green)
 end
 
-----------------------------------------------------------------------
--- Daily
-----------------------------------------------------------------------
 local _, dailyBody = UI.panel("Daily", "Recompensa Diária", UDim2.fromOffset(640, 300))
 local dayRow = UI.make("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 120), Parent = dailyBody })
 UI.make("UIListLayout", {
@@ -246,9 +232,6 @@ local function renderDaily(data)
 	UI.setDisabled(dailyButton, not d.canClaim, T.Yellow)
 end
 
-----------------------------------------------------------------------
--- Ranking
-----------------------------------------------------------------------
 local _, lbBody = UI.panel("Leaderboard", "Ranking Global", UDim2.fromOffset(640, 440), function()
 	Panels.renderLeaderboard()
 end)
@@ -296,9 +279,6 @@ function Panels.renderLeaderboard()
 	lbReb.Text = lines("Mais Rebirths", decoded.rebirths or {}, "")
 end
 
-----------------------------------------------------------------------
--- Ajustes
-----------------------------------------------------------------------
 local _, setBody = UI.panel("Settings", "Ajustes", UDim2.fromOffset(500, 300))
 local reduceButton, reduceLabel = UI.button(setBody, {
 	Text = "Reduzir sustos: NÃO",
@@ -361,9 +341,6 @@ local function renderSettings(data)
 		or "Studio: save em memória (API Services desligado)."
 end
 
-----------------------------------------------------------------------
--- Base: andares, cofre e esteiras pagas
-----------------------------------------------------------------------
 local _, baseBody = UI.panel("Base", "Minha Base", UDim2.fromOffset(600, 430))
 local baseInfo = UI.text(baseBody, { Text = "", Size = UDim2.new(1, 0, 0, 120), MaxTextSize = 22, RichText = true })
 local upgradeButton, upgradeLabel = UI.button(baseBody, {
@@ -447,16 +424,13 @@ local function renderBase(data)
 	)
 	if nextFloor then
 		upgradeLabel.Text = string.format("Construir %s — $%s", nextFloor.name, Format.compact(nextFloor.cost))
-		UI.setDisabled(upgradeButton, data.Cash + (data.Vault or 0) < nextFloor.cost, T.Cyan) -- na base, o cofre é coletado na hora
+		UI.setDisabled(upgradeButton, data.Cash + (data.Vault or 0) < nextFloor.cost, T.Cyan)
 	else
 		upgradeLabel.Text = "Base no máximo!"
 		UI.setDisabled(upgradeButton, true)
 	end
 end
 
-----------------------------------------------------------------------
--- Laboratório: trilhas de upgrade (Gerador, Cofre, Sorte, Segurança)
-----------------------------------------------------------------------
 local U = Config.Upgrades
 local _, labBody = UI.panel("Lab", "Laboratório de Upgrades", UDim2.fromOffset(660, 500))
 
@@ -598,7 +572,6 @@ local function renderLab(data)
 	end
 end
 
-----------------------------------------------------------------------
 State.onReady(function(data)
 	renderLab(data)
 	renderBase(data)

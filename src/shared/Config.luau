@@ -1,58 +1,42 @@
---[[
-	Config.luau — O ÚNICO arquivo que você precisa editar.
-
-	- IDs de Dev Products e Gamepasses começam em 0.
-	  ID 0 = item aparece na loja como "em breve" e NUNCA chama o prompt de compra.
-	- Depois de criar cada item no Creator Dashboard (mesmo nome e preço daqui),
-	  cole o ID no campo `id`.
-	- Todo o resto (balance, Boos, zonas, poderes) também é lido só daqui.
-	- A tabela é congelada no fim do arquivo: ninguém consegue alterá-la em runtime.
-]]
-
 local Config = {
 	GameName = "Steal a Boo!",
 	PlaceVersionNote = "MVP",
 
 	DataStore = {
-		ProfileStoreName = "StealABoo_Player_v3", -- mude o sufixo se quiser resetar o save de todo mundo
+		ProfileStoreName = "StealABoo_Player_v3",
 		OrderedCash = "StealABoo_CashAllTime_v3",
 		OrderedRebirths = "StealABoo_Rebirths_v3",
-		PurchaseIdMemoryDays = 45, -- por quantos dias lembramos de um PurchaseId já entregue
+		PurchaseIdMemoryDays = 45,
 		PurchaseIdMaxEntries = 200,
-		LeaderboardPushSeconds = 120, -- grava no OrderedDataStore a cada N segundos
-		LeaderboardRefreshSeconds = 60, -- relê o top 10 a cada N segundos
+		LeaderboardPushSeconds = 120,
+		LeaderboardRefreshSeconds = 60,
 	},
 
 	World = {
-		MaxPlayersPlotCount = 8, -- 8 plots no mapa
+		MaxPlayersPlotCount = 8,
 		PlotSize = Vector3.new(48, 16, 48),
-		PlazaRadius = 46, -- praça central = zona neutra (sem poderes, sem sustos)
-		-- Regra do portão (decisão de design, ver README):
-		--   o portão começa ABERTO (base invadível, luz vermelha).
-		--   o dono pode TRANCAR por GateLockSeconds (luz verde, ninguém de fora entra/rouba).
-		--   depois que destranca, fica aberto pelo menos GateOpenSeconds antes de poder trancar de novo.
+		PlazaRadius = 46,
+
 		GateLockSeconds = 40,
 		GateOpenSeconds = 20,
-		GateCooldownSeconds = 60, -- = GateLockSeconds + GateOpenSeconds (só informativo/HUD)
+		GateCooldownSeconds = 60,
 		StealCarrySpeedPenalty = 0.75,
 		StealRange = 8,
 		CaptureRange = 10,
 		TrainRange = 8,
-		SafeSpawnSeconds = 4, -- depois de nascer, ninguém te acerta poder/susto
-		NewPlayerProtectSeconds = 120, -- novato (1ª sessão) não pode ser roubado nos 2 primeiros minutos
-		DroppedBooSeconds = 10, -- Boo derrubado fica no chão por 10s
-		DroppedOwnerPrioritySeconds = 2.5, -- nos primeiros segundos só o dono original pode pegar de volta
-		MaxInteractDistance = 20, -- qualquer ação a mais de 20 studs é ignorada (anti-exploit)
+		SafeSpawnSeconds = 4,
+		NewPlayerProtectSeconds = 120,
+		DroppedBooSeconds = 10,
+		DroppedOwnerPrioritySeconds = 2.5,
+		MaxInteractDistance = 20,
 	},
 
-	-- Defesa contra o ladrão: qualquer jogador pode socar quem está carregando um Boo roubado
-	-- (ou tomar o Boo dele). Socos tiram "pegada"; zerou, o Boo cai no chão.
 	Combat = {
-		Punch = { range = 10, cooldown = 0.8, knockback = 14 }, -- empurrão curto: o defensor consegue emendar os socos
-		GripBase = 3, -- socos necessários para o ladrão soltar o Boo
-		GripPerTwoSecurityLevels = 1, -- +1 de pegada a cada 2 níveis de Segurança do DONO do Boo
-		StunSeconds = 1.0, -- ladrão fica atordoado ao soltar
-		TakeBackSeconds = 1.2, -- tempo segurando E para tomar o Boo da mão do ladrão
+		Punch = { range = 10, cooldown = 0.8, knockback = 14 },
+		GripBase = 3,
+		GripPerTwoSecurityLevels = 1,
+		StunSeconds = 1.0,
+		TakeBackSeconds = 1.2,
 		TakeBackRange = 8,
 	},
 
@@ -60,20 +44,20 @@ local Config = {
 		StartingCash = 50,
 		IncomeTickSeconds = 1,
 		TrainingCashCostBase = 20,
-		TrainingCostGrowth = 1.045, -- custo = base * growth ^ (treinos já feitos naquele status)
+		TrainingCostGrowth = 1.045,
 		SpeedPerTrain = 0.15,
 		ThrowPerTrain = 0.15,
-		MaxSpeed = 32, -- WalkSpeed máximo vindo do treino
+		MaxSpeed = 32,
 		MaxThrow = 40,
 		BaseWalkSpeed = 16,
-		ThrowRangeBonusPerPoint = 0.2, -- Throw Power aumenta o alcance da captura
+		ThrowRangeBonusPerPoint = 0.2,
 		ThrowRangeBonusMax = 8,
-		MaxInventory = 30, -- Boos guardados (fora da base)
-		SellMultiplier = 20, -- vender um Boo = incomePerSec * 20
-		StarterBoo = "MarshBoo", -- todo jogador novo ganha 1 para começar
+		MaxInventory = 30,
+		SellMultiplier = 20,
+		StarterBoo = "MarshBoo",
 	},
 
-	Carousel = { -- carrossel da praça: compra um Boo surpresa com Cash
+	Carousel = {
 		Price = 400,
 		PriceGrowthPerRebirth = 1.8,
 		Zone = "Fairground",
@@ -83,23 +67,23 @@ local Config = {
 	Rebirth = {
 		CashRequiredBase = 100000,
 		CashRequiredGrowth = 3.0,
-		IncomeMultiplierPerRebirth = 0.25, -- +25% por rebirth
-		KeepRarityAtOrAbove = "Epic", -- Boos Epic ou melhores ficam depois do rebirth
+		IncomeMultiplierPerRebirth = 0.25,
+		KeepRarityAtOrAbove = "Epic",
 	},
 
 	Daily = {
 		StreakMax = 7,
-		Rewards = { 100, 200, 400, 700, 1000, 1600, 3000 }, -- cash por dia da sequência
-		StreakBonusItemDay7 = "LuckyTicket", -- dia 7 = +1 Super Lucky Capture
+		Rewards = { 100, 200, 400, 700, 1000, 1600, 3000 },
+		StreakBonusItemDay7 = "LuckyTicket",
 	},
 
 	Plot = {
-		-- Térreo: 12 slots (6 livres + 4 do passe ExtraSlots + 2 do passe VIP)
+
 		GroundSlots = 12,
 		BaseGroundSlots = 6,
-		ExtraSlotsPass = 4, -- gamepass ExtraSlots (slots 7 a 10 do térreo)
-		VIPSlots = 2, -- gamepass VIP (slots 11 e 12 do térreo)
-		-- Andares de cima: comprados com Cash (placa Melhorar base / painel Base), 8 slots cada
+		ExtraSlotsPass = 4,
+		VIPSlots = 2,
+
 		FloorSlots = 8,
 		FloorHeight = 14,
 		Floors = {
@@ -110,21 +94,17 @@ local Config = {
 			{ name = "5º andar", cost = 500000000 },
 			{ name = "6º andar", cost = 20000000000 },
 		},
-		MaxSlots = 52, -- 12 + 5 andares x 8
+		MaxSlots = 52,
 	},
 
-	-- Cofre e esteira de coleta: a renda dos Boos cai no cofre da base.
-	-- Pise na esteira de coleta (perto do seu spawn) para passar o cofre para o seu Cash.
-	-- O cofre TEM LIMITE (segundos de renda): cheio, a renda para até você coletar.
 	Vault = {
 		CollectRadius = 5,
 		BaseSeconds = 90,
-		SecondsPerLevel = 45, -- trilha Cofre
+		SecondsPerLevel = 45,
 		MinCapacity = 150,
-		AutoCollectSeconds = 6, -- passe Coleta Automática: passa o cofre pro Cash a cada N segundos
+		AutoCollectSeconds = 6,
 	},
 
-	-- Laboratório: trilhas de upgrade pagas com Cash do jogo. Custo do nível L -> L+1 = baseCost * growth ^ L.
 	Upgrades = {
 		Income = {
 			name = "Gerador",
@@ -161,16 +141,13 @@ local Config = {
 			desc = "Ladrão demora mais para roubar, segura menos e o portão fica trancado mais tempo",
 		},
 		Order = { "Income", "Vault", "Luck", "Security" },
-		StealHoldPerLevel = 0.12, -- segundos a mais para roubar, por nível de Segurança
-		GateLockPerLevel = 3, -- segundos a mais de portão trancado, por nível de Segurança
+		StealHoldPerLevel = 0.12,
+		GateLockPerLevel = 3,
 	},
 
-	-- Pedestal: cada slot da base evolui separado (tecla F perto do Boo). O nível fica no slot,
-	-- então se o Boo for roubado ou guardado, o pedestal continua evoluído.
 	Pedestal = { max = 10, perLevel = 0.25, baseCost = 1500, growth = 2.6 },
-	SaleCostMultiplier = 0.5, -- produto "Promoção" divide o custo de TODOS os upgrades por 2
+	SaleCostMultiplier = 0.5,
 
-	-- Gamepasses (permanentes). IDs começam em 0.
 	GamePasses = {
 		DoubleCash = {
 			id = 2079530254,
@@ -209,12 +186,8 @@ local Config = {
 		},
 	},
 
-	-- Dev Products (consumíveis). IDs começam em 0.
-	-- kind diz o que o ProcessReceipt entrega:
-	--   ServerLuck (mult, duration) | PersonalCash2x (duration) | LuckyCaptures (amount)
-	--   Consumable (item, amount)   | Cash (amount) | IncomeBoost (mult, duration)
 	Products = {
-		-- Promoção: metade do preço em TODOS os upgrades (Laboratório, pedestais e andares)
+
 		Sale50 = {
 			id = 3730315517,
 			price = 59,
@@ -225,7 +198,7 @@ local Config = {
 			duration = 600,
 			desc = "Todos os upgrades e andares pela METADE do preço por 10 min.",
 		},
-		-- Esteiras pagas da base: multiplicam a renda dos Boos por pouco tempo
+
 		Belt2x = {
 			id = 3730282380,
 			price = 15,
@@ -259,7 +232,7 @@ local Config = {
 			duration = 120,
 			desc = "Renda QUADRUPLICADA por 2 min!",
 		},
-		-- Sorte do servidor (15 min, todo mundo vê o banner)
+
 		Luck2x15 = {
 			id = 3730282423,
 			price = 19,
@@ -293,7 +266,7 @@ local Config = {
 			duration = 900,
 			desc = "8x sorte! Todo mundo vai te agradecer.",
 		},
-		-- Boosts pessoais
+
 		Cash2x15 = {
 			id = 3730282437,
 			price = 49,
@@ -324,7 +297,7 @@ local Config = {
 			amount = 10,
 			desc = "10 capturas com sorte turbinada.",
 		},
-		-- Poderzinhos
+
 		SpeedRush3 = {
 			id = 3730282454,
 			price = 19,
@@ -380,7 +353,7 @@ local Config = {
 			amount = 1,
 			desc = "Congela o ladrão mais perto por 3s.",
 		},
-		-- Sustos cômicos
+
 		ScareClassic3 = {
 			id = 3730282482,
 			price = 19,
@@ -425,7 +398,7 @@ local Config = {
 			amount = 1,
 			desc = "Sirene boba quando alguém entra na base.",
 		},
-		-- Cash packs
+
 		CashS = {
 			id = 3730282513,
 			price = 29,
@@ -468,7 +441,6 @@ local Config = {
 		},
 	},
 
-	-- Ordem e rótulos da hotbar (teclas 1..9)
 	Consumables = {
 		{ key = "SpeedRush", label = "Speed", icon = "⚡", type = "Power" },
 		{ key = "SuperJump", label = "Pulo", icon = "🦘", type = "Power" },
@@ -497,7 +469,7 @@ local Config = {
 	},
 
 	Rarities = {
-		-- tier: ordem; luckAffected: a sorte multiplica o peso dessa raridade
+
 		Common = { tier = 1, color = Color3.fromRGB(200, 200, 210), label = "Comum" },
 		Uncommon = { tier = 2, color = Color3.fromRGB(110, 220, 120), label = "Incomum" },
 		Rare = { tier = 3, color = Color3.fromRGB(80, 170, 255), label = "Raro" },
@@ -506,11 +478,9 @@ local Config = {
 		Mythic = { tier = 6, color = Color3.fromRGB(255, 80, 150), label = "Mítico" },
 		Secret = { tier = 7, color = Color3.fromRGB(40, 255, 230), label = "Secreto" },
 	},
-	LuckAffectsFromTier = 3, -- sorte multiplica o peso de Rare (tier 3) para cima
-	SuperLuckyMultiplier = 10, -- Super Lucky Capture = re-roll com 10x sorte (fica o melhor)
+	LuckAffectsFromTier = 3,
+	SuperLuckyMultiplier = 10,
 
-	-- Boos originais. weight = chance relativa DENTRO da zona.
-	-- accessory = detalhe visual montado com primitivas (ver shared/BooModel.luau)
 	Boos = {
 		MarshBoo = {
 			name = "MarshBoo",
@@ -661,7 +631,6 @@ local Config = {
 		},
 	},
 
-	-- minStat compara com max(Speed, ThrowPower) — ver README
 	Zones = {
 		{
 			name = "Fairground",
@@ -704,30 +673,27 @@ local Config = {
 			color = Color3.fromRGB(80, 255, 200),
 		},
 	},
-	BooRespawnSeconds = 6, -- a cada N segundos, cada zona tenta completar seus Boos
+	BooRespawnSeconds = 6,
 	CaptureCooldown = 0.8,
 
-	-- Sons: SÓ preencha com IDs do Creator Store que você tem licença (anote em assets/CREDITS.md).
-	-- 0 = sem som (o jogo funciona normalmente).
 	Sounds = {
-		-- Áudio licenciado do Creator Store (ver assets/CREDITS.md). 0 = sem som.
-		Pop = 9112872244, -- ProSoundEffects
-		RareSting = 9116394545, -- ProSoundEffects
-		Alarm = 9113041445, -- ProSoundEffects (sirene de desenho)
-		Whoosh = 9126283592, -- ProSoundEffects
-		Boo = 9119197913, -- ProSoundEffects (apito cômico)
-		Coin = 9113849306, -- ProSoundEffects
-		Slap = 9114771792, -- ProSoundEffects
-		Freeze = 9125611419, -- ProSoundEffects
-		Poof = 9125640290, -- ProSoundEffects
-		Purchase = 10066947742, -- Roblox
-		Click = 15675059323, -- Roblox
-		Spring = 12222124, -- Roblox
-		Music = 1838796580, -- APMOfficial "Carnival"
+
+		Pop = 9112872244,
+		RareSting = 9116394545,
+		Alarm = 9113041445,
+		Whoosh = 9126283592,
+		Boo = 9119197913,
+		Coin = 9113849306,
+		Slap = 9114771792,
+		Freeze = 9125611419,
+		Poof = 9125640290,
+		Purchase = 10066947742,
+		Click = 15675059323,
+		Spring = 12222124,
+		Music = 1838796580,
 		Volume = 0.4,
 	},
-	-- Modelos 3D gratuitos do Creator Store (ver assets/CREDITS.md). O WorldBuilder os carrega por ID
-	-- quando o place não tem a pasta ServerStorage.ExternalAssets (ex.: publicado pelo CI/CD).
+
 	ExternalAssets = {
 		Tree = 12549617200,
 		Bench = 393609716,
@@ -735,7 +701,6 @@ local Config = {
 		StringLights = 9320917020,
 	},
 
-	-- MaterialVariants gerados no Studio (MaterialService). Se não existirem, usa o material base.
 	Materials = {
 		Planks = "BooCandyPlanks",
 		Tiles = "BooStarTiles",
@@ -743,19 +708,18 @@ local Config = {
 		Cobble = "BooPeachCobble",
 		Belt = "BooConveyor",
 	},
-	-- Alguns sons são longos: toca só o começo (segundos)
+
 	SoundTrim = {
 		Coin = 0.9,
 		Freeze = 1.2,
 	},
 
 	RateLimit = {
-		EventsPerSecond = 8, -- por jogador, por remote
-		KickThreshold = 120, -- eventos em 10s (abuso extremo) => kick com log
+		EventsPerSecond = 8,
+		KickThreshold = 120,
 	},
 }
 
--- Congela tudo (deep freeze) para ninguém mudar o Config em runtime.
 local function deepFreeze(t)
 	for _, v in pairs(t) do
 		if type(v) == "table" and not table.isfrozen(v) then

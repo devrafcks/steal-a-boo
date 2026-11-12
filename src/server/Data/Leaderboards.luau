@@ -1,10 +1,3 @@
---[[
-	Leaderboards.luau — ranking global com OrderedDataStore (não usa ProfileStore).
-	- Grava TotalCash e Rebirths no leave e a cada LeaderboardPushSeconds.
-	- Lê o top 10 a cada LeaderboardRefreshSeconds e escreve nos painéis da praça
-	  e em ReplicatedStorage.LeaderboardData (JSON) para o botão do HUD.
-	- Sem API Services no Studio: mostra "Ranking indisponível no Studio" e segue.
-]]
 local DataStoreService = game:GetService("DataStoreService")
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")

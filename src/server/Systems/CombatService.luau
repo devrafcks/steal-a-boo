@@ -1,14 +1,3 @@
---[[
-	CombatService.luau — poderes e sustos cômicos (consumíveis).
-
-	Regras de fair play (todas no servidor):
-	- Precisa ter estoque (Data.Consumables) e estar fora do cooldown.
-	- Poderes de alvo (Slap, Freeze) e sustos NÃO funcionam na praça (zona neutra),
-	  nem em quem acabou de nascer (SafeSpawnSeconds), nem atravessando paredes.
-	- O estoque só é gasto se o efeito aconteceu (ninguém perto = não gasta).
-	- Susto: 1,5s de overlay fofo no alvo. Quem marcou "Reduzir sustos" vê só um ícone.
-	- Levar Slap ou susto faz o ladrão soltar o Boo roubado (defesa divertida).
-]]
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 
@@ -39,7 +28,6 @@ local function hasLineOfSight(a: Player, b: Player): boolean
 	return hit == nil
 end
 
--- Alvo é válido? (o atacante já foi checado antes)
 local function validTarget(attacker: Player, target: Player, range: number, from: Vector3): boolean
 	if target == attacker or not ctx.Net.alive(target) then
 		return false
@@ -105,7 +93,6 @@ local function scare(attacker: Player, target: Player, duration: number, fovPunc
 	ctx.Boos.dropCarried(target, "scared")
 end
 
--- Cada efeito retorna true se aconteceu (aí gasta 1 do estoque)
 local EFFECTS = {}
 
 EFFECTS.SpeedRush = function(player)
@@ -142,7 +129,7 @@ EFFECTS.Slap = function(player)
 	local dir = (to - from) * Vector3.new(1, 0, 1)
 	dir = dir.Magnitude > 0.01 and dir.Unit or Vector3.new(0, 0, 1)
 	ctx.Boos.dropCarried(target, "slapped")
-	-- O empurrão é aplicado pelo cliente do alvo (dono da física do próprio boneco)
+
 	ctx.fx("Knockback", { velocity = dir * cfg.force + Vector3.new(0, cfg.force * 0.45, 0) }, target)
 	ctx.fx("Slap", { from = player.UserId, to = target.UserId, position = to })
 	ctx.notify(target, string.format("%s te deu um Boo Slap!", player.DisplayName), "danger")
